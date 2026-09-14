@@ -1,0 +1,7 @@
+.DS_Store
+.build-artifacts/
+__pycache__/
+*.pyc
+qa/private-fixtures/
+qa/private-evidence/
+models/

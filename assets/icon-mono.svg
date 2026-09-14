@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">WhisperBridge audio-to-text icon</title>
+  <rect width="160" height="160" rx="58" fill="#143A43"/>
+  <path d="M61 48h134a17 17 0 0 1 17 17v108a17 17 0 0 1-17 17h-81l-35 22v-22H61a17 17 0 0 1-17-17V65a17 17 0 0 1 17-17Z" fill="none" stroke="#143A43" stroke-width="8" stroke-linejoin="round"/>
+  <g fill="none" stroke="#143A43" stroke-width="9" stroke-linecap="round"><path d="M70 110v20M89 91v58M108 80v80M127 103v34"/></g>
+  <g fill="none" stroke="#143A43" stroke-width="9" stroke-linecap="round"><path d="M152 96h33M152 120h24M152 144h33"/></g>
+</svg>

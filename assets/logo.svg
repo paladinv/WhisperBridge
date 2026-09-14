@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="240" viewBox="0 0 840 240" role="img" aria-labelledby="title desc">
+  <title id="title">WhisperBridge</title>
+  <desc id="desc">A speech bubble with an audio waveform becoming lines of text. WhisperBridge: Audio into words.</desc>
+  <rect width="840" height="240" rx="28" fill="#F4F7F8"/>
+  <g transform="translate(40 40)">
+    <path d="M32 0h96a32 32 0 0 1 32 32v80a32 32 0 0 1-32 32H64l-32 16v-16A32 32 0 0 1 0 112V32A32 32 0 0 1 32 0Z" fill="#143A43"/>
+    <g stroke="#67DDD0" stroke-width="8" stroke-linecap="round">
+      <path d="M32 63v18M48 48v48M64 36v72M80 55v34"/>
+    </g>
+    <g stroke="#FFFFFF" stroke-width="8" stroke-linecap="round">
+      <path d="M100 52h28M100 72h20M100 92h28"/>
+    </g>
+  </g>
+  <text x="234" y="117" fill="#143A43" font-family="-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif" font-size="57" font-weight="650" letter-spacing="-2">WhisperBridge</text>
+  <text x="237" y="158" fill="#46616A" font-family="-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif" font-size="23" letter-spacing="1">Audio into words.</text>
+</svg>

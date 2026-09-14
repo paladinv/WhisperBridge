@@ -1,0 +1,992 @@
+[
+  {
+    "id": "QA-001",
+    "use_case": "UC-01",
+    "requirement": "R01",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Clean installation",
+    "preconditions": "Clean supported Mac; signed candidate installer; no developer tools",
+    "steps": [
+      "Install using published instructions",
+      "open app",
+      "download recommended model",
+      "reach Ready"
+    ],
+    "expected": "No terminal or API key needed; no unhandled security dialog; exact version recorded",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-002",
+    "use_case": "UC-01",
+    "requirement": "R01",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Novice setup and first prompt",
+    "preconditions": "Five casual participants; F01; LM Studio installed",
+    "steps": [
+      "Give installer and one-page instructions",
+      "observe without coaching through paste and send"
+    ],
+    "expected": "At least 4 of 5 complete unaided; median active setup <=5 minutes excluding measured download; zero lost drafts",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-003",
+    "use_case": "UC-03",
+    "requirement": "R03",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "First launch offline",
+    "preconditions": "Clean model store; network disconnected",
+    "steps": [
+      "Open app",
+      "start download",
+      "restore network",
+      "Retry"
+    ],
+    "expected": "Plain internet-needed message; no endless spinner; recovery reaches Ready",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-004",
+    "use_case": "UC-03",
+    "requirement": "R03",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Interrupted model download",
+    "preconditions": "Connected network; empty model store",
+    "steps": [
+      "Start download",
+      "interrupt connection at mid-download",
+      "reopen",
+      "Retry"
+    ],
+    "expected": "Partial file is never activated; resumed or restarted download verifies before use",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-005",
+    "use_case": "UC-03",
+    "requirement": "R03",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Corrupt model",
+    "preconditions": "QA-controlled downloaded artifact with wrong hash",
+    "steps": [
+      "Attempt model activation",
+      "select Retry with valid artifact"
+    ],
+    "expected": "Mismatch blocks inference; clear repair action; valid retry succeeds",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-006",
+    "use_case": "UC-03",
+    "requirement": "R03",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Insufficient model storage",
+    "preconditions": "QA quota-limited workspace store below declared requirement",
+    "steps": [
+      "Start model download",
+      "free space",
+      "Retry"
+    ],
+    "expected": "Space requirement and failure explained; no partial active model; recovery works",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-007",
+    "use_case": "UC-03",
+    "requirement": "R03",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Cancel download",
+    "preconditions": "Empty model store",
+    "steps": [
+      "Start download",
+      "Cancel twice",
+      "reopen app"
+    ],
+    "expected": "Cancellation is idempotent; no active partial model; download can restart",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-008",
+    "use_case": "UC-02",
+    "requirement": "R02",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Choose supported formats",
+    "preconditions": "F01 and equivalent F02-F04 encodings",
+    "steps": [
+      "Choose each WAV/MP3/M4A/FLAC file",
+      "transcribe",
+      "compare content"
+    ],
+    "expected": "Each advertised format decodes and produces equivalent speech content without a codec installation",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-009",
+    "use_case": "UC-02",
+    "requirement": "R02",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Drop versus picker",
+    "preconditions": "F01 in folder with spaces and Unicode name",
+    "steps": [
+      "Import by picker",
+      "clear",
+      "import by drag/drop"
+    ],
+    "expected": "Same filename, duration and transcript; Unicode preserved",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-010",
+    "use_case": "UC-02",
+    "requirement": "R02",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Misleading extension",
+    "preconditions": "F11 non-audio renamed .mp3",
+    "steps": [
+      "Choose file and transcribe"
+    ],
+    "expected": "Content rejected with usable explanation; no crash or false completion",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-011",
+    "use_case": "UC-02",
+    "requirement": "R02",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Multiple-file drop",
+    "preconditions": "F01 and F05",
+    "steps": [
+      "Drop both together"
+    ],
+    "expected": "Explains one-file limit; no silent processing of a random file",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-012",
+    "use_case": "UC-02",
+    "requirement": "R02",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Missing or denied source",
+    "preconditions": "F01 selected; test source subsequently moved or permission denied",
+    "steps": [
+      "Select then move/deny source",
+      "start job",
+      "choose accessible replacement"
+    ],
+    "expected": "Actionable read error; replacement succeeds; unrelated files untouched",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-013",
+    "use_case": "UC-04",
+    "requirement": "R04",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Clean speech accuracy",
+    "preconditions": "F01 with human reference; exact model hash recorded",
+    "steps": [
+      "Transcribe",
+      "independently compare raw output using defined WER procedure"
+    ],
+    "expected": "Clean English aggregate WER <=10%; actual substitutions/deletions/insertions recorded",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-014",
+    "use_case": "UC-04",
+    "requirement": "R04",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Silent input",
+    "preconditions": "F07 silence",
+    "steps": [
+      "Transcribe three times",
+      "review all outputs"
+    ],
+    "expected": "No speech detected; no fabricated sentence; Copy disabled for empty output",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-015",
+    "use_case": "UC-04",
+    "requirement": "R04",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Music and noise without speech",
+    "preconditions": "F08",
+    "steps": [
+      "Transcribe each sample"
+    ],
+    "expected": "No plausible fabricated speech presented as valid transcript; no hang",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-016",
+    "use_case": "UC-04",
+    "requirement": "R04",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Noisy speech",
+    "preconditions": "F09 with human reference",
+    "steps": [
+      "Transcribe and score raw text",
+      "inspect warning"
+    ],
+    "expected": "Aggregate WER <=25%; review notice available; no omission of whole speech sections",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-017",
+    "use_case": "UC-05",
+    "requirement": "R04",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "French transcription",
+    "preconditions": "F05 French with accents",
+    "steps": [
+      "Transcribe with Auto then French override",
+      "compare human reference"
+    ],
+    "expected": "Source language retained; French aggregate WER <=15%; accents survive review/copy",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-018",
+    "use_case": "UC-05",
+    "requirement": "R04",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Wrong language recovery",
+    "preconditions": "F05 with deliberately wrong language setting",
+    "steps": [
+      "Transcribe",
+      "switch to French",
+      "Retry"
+    ],
+    "expected": "New selection governs retry; previous language output does not append",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-019",
+    "use_case": "UC-05",
+    "requirement": "R04",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Mixed and non-Latin language",
+    "preconditions": "F06 mixed speech and Japanese samples with references",
+    "steps": [
+      "Use Auto and override where applicable",
+      "review with fluent speaker"
+    ],
+    "expected": "No hidden English translation; Japanese CER <=20%; mixed-language omissions explicitly assessed",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-020",
+    "use_case": "UC-06",
+    "requirement": "R05",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Edit and copy exact text",
+    "preconditions": "Completed F01 transcript",
+    "steps": [
+      "Replace a name",
+      "add emoji and blank lines",
+      "Copy",
+      "paste into plain editor"
+    ],
+    "expected": "Clipboard equals edited text exactly including Unicode and line breaks",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-021",
+    "use_case": "UC-06",
+    "requirement": "R05",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Reset and undo",
+    "preconditions": "Edited transcript",
+    "steps": [
+      "Undo/redo edits",
+      "Reset then Cancel",
+      "Reset then confirm"
+    ],
+    "expected": "Cancel preserves edits; confirmed reset restores raw recognition text only",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-022",
+    "use_case": "UC-07",
+    "requirement": "R06",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "End-to-end LM Studio prompt",
+    "preconditions": "F01; supported LM Studio build; loaded text model",
+    "steps": [
+      "Transcribe",
+      "correct amount to 42",
+      "Copy",
+      "paste",
+      "ask what amount was stated",
+      "Send"
+    ],
+    "expected": "Prompt visibly contains reviewed text once; model receives text and answers 42; capture prompt and response",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-023",
+    "use_case": "UC-07",
+    "requirement": "R06",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Preserve an existing prompt",
+    "preconditions": "LM Studio composer contains BEFORE and AFTER",
+    "steps": [
+      "Place caret between words",
+      "paste reviewed transcript",
+      "inspect before Send"
+    ],
+    "expected": "Existing text outside selected range remains; companion never sends automatically",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-024",
+    "use_case": "UC-07",
+    "requirement": "R06",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Correct chat ownership",
+    "preconditions": "Two LM Studio chats with distinct draft markers",
+    "steps": [
+      "Copy transcript",
+      "choose second chat",
+      "paste",
+      "inspect first chat"
+    ],
+    "expected": "Only user-selected second draft changes; no automatic cross-chat mutation",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-025",
+    "use_case": "UC-07",
+    "requirement": "R06",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "LM Studio closed",
+    "preconditions": "Completed transcript; LM Studio closed",
+    "steps": [
+      "Copy and Save",
+      "launch LM Studio",
+      "paste"
+    ],
+    "expected": "Transcript remains usable; no LM Studio server requirement",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-026",
+    "use_case": "UC-07",
+    "requirement": "R06",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Clipboard changes require action",
+    "preconditions": "Clipboard has synthetic sentinel; F01",
+    "steps": [
+      "Transcribe and edit without copying",
+      "inspect clipboard",
+      "then press Copy"
+    ],
+    "expected": "Sentinel stays until explicit Copy; no automatic clipboard reading or replacement",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-027",
+    "use_case": "UC-08",
+    "requirement": "R05",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "UTF-8 export",
+    "preconditions": "Edited transcript with accents, emoji and blank lines",
+    "steps": [
+      "Save .txt",
+      "reopen in another editor",
+      "compare"
+    ],
+    "expected": "Exact edited text preserved; original audio unchanged",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-028",
+    "use_case": "UC-08",
+    "requirement": "R05",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Save denied and overwrite cancel",
+    "preconditions": "Existing output file; unwritable test directory",
+    "steps": [
+      "Save over file then cancel",
+      "attempt denied destination",
+      "choose valid destination"
+    ],
+    "expected": "Existing file unchanged on cancel; error preserves draft; valid save succeeds",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-029",
+    "use_case": "UC-09",
+    "requirement": "R07",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Cancel decoding and inference",
+    "preconditions": "F10 long recording",
+    "steps": [
+      "Cancel once during decoding and once during inference",
+      "Retry after each"
+    ],
+    "expected": "UI acknowledges within 1 second; worker stops within 5 seconds; no cancelled transcript is published",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-030",
+    "use_case": "UC-09",
+    "requirement": "R07",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Rapid clicks and late completion",
+    "preconditions": "F10 and F01; worker-delay test hook",
+    "steps": [
+      "Double-click Transcribe",
+      "cancel F10",
+      "start F01",
+      "release delayed F10 result"
+    ],
+    "expected": "One active job; output belongs only to F01; no duplicate insertion",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-031",
+    "use_case": "UC-10",
+    "requirement": "R10",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "File size boundary",
+    "preconditions": "Valid audio fixtures at 500 MiB and one byte above",
+    "steps": [
+      "Import each",
+      "observe validation before inference"
+    ],
+    "expected": "500 MiB allowed if other limits pass; larger file rejected before inference",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-032",
+    "use_case": "UC-10",
+    "requirement": "R10",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Duration boundary",
+    "preconditions": "Valid audio at 7200 seconds and one audio frame above",
+    "steps": [
+      "Import each",
+      "inspect decoded-duration validation"
+    ],
+    "expected": "7200 seconds allowed; longer rejected; no dependence on misleading metadata alone",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-033",
+    "use_case": "UC-10",
+    "requirement": "R10",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Chunk continuity",
+    "preconditions": "F10 with unique spoken markers around every chunk join",
+    "steps": [
+      "Transcribe",
+      "compare markers and start/end against reference"
+    ],
+    "expected": "No missing or duplicated join phrases; final marker present; order retained",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-034",
+    "use_case": "UC-11",
+    "requirement": "R08",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Offline complete workflow",
+    "preconditions": "Installed model; F01; network disabled",
+    "steps": [
+      "Restart",
+      "transcribe",
+      "edit",
+      "copy",
+      "save"
+    ],
+    "expected": "All steps work offline without remote-service retries",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-035",
+    "use_case": "UC-12",
+    "requirement": "R07",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Worker failure and retry",
+    "preconditions": "Reviewed draft saved/retained; QA worker-failure hook",
+    "steps": [
+      "Attempt replacement",
+      "provoke worker exit",
+      "Retry"
+    ],
+    "expected": "Stage-specific error; retained draft intact; retry creates one fresh result",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-036",
+    "use_case": "UC-12",
+    "requirement": "R07",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Damaged audio recovery",
+    "preconditions": "F12 truncated file and F01",
+    "steps": [
+      "Import damaged file",
+      "recover by choosing F01"
+    ],
+    "expected": "Decoder fails clearly or flags partial decode; no silent complete transcript; next job succeeds",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-037",
+    "use_case": "UC-13",
+    "requirement": "R09",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Keyboard-only workflow",
+    "preconditions": "F01; pointer unused",
+    "steps": [
+      "Tab through import/options/transcribe/cancel/review/copy/save"
+    ],
+    "expected": "Logical order; visible focus; all actions reachable; no keyboard trap",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-038",
+    "use_case": "UC-13",
+    "requirement": "R09",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "VoiceOver workflow",
+    "preconditions": "VoiceOver enabled; F01",
+    "steps": [
+      "Navigate controls",
+      "run job",
+      "edit and copy",
+      "provoke invalid file"
+    ],
+    "expected": "Names/roles and progress/error states spoken; no repeated announcement flood; text editable",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-039",
+    "use_case": "UC-13",
+    "requirement": "R09",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Scaling and visual accessibility",
+    "preconditions": "Small supported display; text enlarged; light/dark modes",
+    "steps": [
+      "Run full flow at 200% text size or OS equivalent",
+      "inspect contrast"
+    ],
+    "expected": "No clipped essential controls; body text contrast >=4.5:1; controls/focus >=3:1; state not color-only",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-040",
+    "use_case": "UC-14",
+    "requirement": "R08",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Network privacy",
+    "preconditions": "Installed model; synthetic private marker in F01; workspace-captured traffic",
+    "steps": [
+      "Monitor app process traffic while importing/transcribing/editing/copying"
+    ],
+    "expected": "No app-originated audio/text upload or telemetry; evidence distinguishes unrelated OS traffic",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-041",
+    "use_case": "UC-14",
+    "requirement": "R08",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Diagnostic redaction",
+    "preconditions": "Synthetic unique marker in filename and transcript",
+    "steps": [
+      "Complete then fail job",
+      "export diagnostics",
+      "search for marker and full path"
+    ],
+    "expected": "No transcript, audio, clipboard content or sensitive source path in logs",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-042",
+    "use_case": "UC-14",
+    "requirement": "R08",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Clear session semantics",
+    "preconditions": "Transcript copied, exported and pasted into LM Studio",
+    "steps": [
+      "Clear app session",
+      "inspect app",
+      "inspect external copies"
+    ],
+    "expected": "App view clears; explains external copies remain; no false all-copies-deleted claim",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-043",
+    "use_case": "UC-15",
+    "requirement": "R11",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Quit with unsaved text",
+    "preconditions": "Edited unsaved transcript",
+    "steps": [
+      "Quit and Cancel",
+      "repeat with Save",
+      "repeat with Discard"
+    ],
+    "expected": "Cancel returns intact draft; Save handles errors before quitting; Discard requires explicit choice",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-044",
+    "use_case": "UC-15",
+    "requirement": "R11",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Crash cleanup",
+    "preconditions": "F10 active; workspace-contained QA storage",
+    "steps": [
+      "Force-stop candidate process",
+      "restart",
+      "inspect intermediate files"
+    ],
+    "expected": "Stale decoded audio removed; original untouched; no unexplained transcript persistence",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-045",
+    "use_case": "UC-15",
+    "requirement": "R11",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Sleep and wake",
+    "preconditions": "F10 running",
+    "steps": [
+      "Sleep machine",
+      "wake",
+      "wait for job or documented failure"
+    ],
+    "expected": "No duplicate completion or hang; progress recovers or actionable Retry appears",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-046",
+    "use_case": "UC-16",
+    "requirement": "R11",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Upgrade and rollback",
+    "preconditions": "Previous candidate with installed model; new signed candidate",
+    "steps": [
+      "Upgrade",
+      "transcribe",
+      "simulate interrupted update in disposable test install"
+    ],
+    "expected": "Model remains valid; working version retained/recoverable; no user file loss",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-047",
+    "use_case": "UC-16",
+    "requirement": "R11",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Uninstall cleanup",
+    "preconditions": "App/model plus external source and export fixtures",
+    "steps": [
+      "Follow removal instructions",
+      "retain model once then remove it on repeat"
+    ],
+    "expected": "Only chosen app-owned data removed; source and exports intact; residual storage documented",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-048",
+    "use_case": "UC-17",
+    "requirement": "R10",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Minimum hardware performance",
+    "preconditions": "Supported lowest-spec machine; F01 60 seconds; cold and warm runs",
+    "steps": [
+      "Run 3 cold and 3 warm trials",
+      "record timings, peak RSS and responsiveness"
+    ],
+    "expected": "Median warm inference <=60 seconds; app RSS <=2 GiB; controls respond <=200 ms; publish measured hardware",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-049",
+    "use_case": "UC-17",
+    "requirement": "R10",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Resource pressure",
+    "preconditions": "F10; supported machine; controlled competing workload",
+    "steps": [
+      "Transcribe with LM Studio loaded",
+      "induce memory pressure",
+      "cancel"
+    ],
+    "expected": "No system exhaustion from unbounded buffers; clear failure/retry if needed; cancellation works",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-050",
+    "use_case": "UC-17",
+    "requirement": "R10",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Acceleration fallback",
+    "preconditions": "QA switch causing accelerator initialization failure",
+    "steps": [
+      "Start job",
+      "use CPU retry",
+      "compare transcript"
+    ],
+    "expected": "Explains recovery; CPU job works without reinstall; no endless automatic loop",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-051",
+    "use_case": "UC-18",
+    "requirement": "R07",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Dirty draft replacement",
+    "preconditions": "Edited F01; F05 ready to import",
+    "steps": [
+      "Choose new file",
+      "Keep editing",
+      "repeat and Discard"
+    ],
+    "expected": "Keep preserves text; Discard replaces only after explicit action; no accidental loss",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-052",
+    "use_case": "UC-18",
+    "requirement": "R07",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Repeated use and leaks",
+    "preconditions": "F01; installed model",
+    "steps": [
+      "Run 20 transcribe/clear cycles",
+      "compare post-idle resource baseline after cycles 2 and 20"
+    ],
+    "expected": "No accumulating temp audio; idle RSS growth <=100 MiB; all outputs remain correct",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-053",
+    "use_case": "UC-19",
+    "requirement": "R06",
+    "priority": "P0",
+    "scope": "baseline",
+    "title": "Oversized prompt handoff",
+    "preconditions": "Long reviewed text exceeding small LLM context",
+    "steps": [
+      "Copy",
+      "paste into LM Studio",
+      "attempt Send",
+      "recover by splitting"
+    ],
+    "expected": "No companion truncation; full original retained; host error understood; shorter prompt works",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-054",
+    "use_case": "UC-20",
+    "requirement": "R12",
+    "priority": "P0",
+    "scope": "native",
+    "title": "Native install and attachment access",
+    "preconditions": "Proven native integration candidate; clean supported LM Studio",
+    "steps": [
+      "Install without terminal",
+      "choose real audio through supported attachment flow",
+      "transcribe"
+    ],
+    "expected": "Native audio path is genuinely accessible; runtime packaged; no undocumented manual setup",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-055",
+    "use_case": "UC-20",
+    "requirement": "R12",
+    "priority": "P0",
+    "scope": "native",
+    "title": "Native history persistence",
+    "preconditions": "Native candidate enabled; F01 plus typed instruction",
+    "steps": [
+      "Send through preprocessor",
+      "inspect history",
+      "disable plugin",
+      "reopen chat"
+    ],
+    "expected": "Transcript and instruction persist once in correct chat; no re-transcription of prior turns",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-056",
+    "use_case": "UC-20",
+    "requirement": "R12",
+    "priority": "P0",
+    "scope": "native",
+    "title": "Native cancellation and failure",
+    "preconditions": "Native candidate; F10 and decoder-failure fixture",
+    "steps": [
+      "Send",
+      "cancel during processing",
+      "retry after failure"
+    ],
+    "expected": "No incomplete replacement prompt reaches model; original instruction remains recoverable",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-057",
+    "use_case": "UC-20",
+    "requirement": "R12",
+    "priority": "P0",
+    "scope": "native",
+    "title": "Native attachment and chat preservation",
+    "preconditions": "Native candidate; two chats; text plus image attachment plus audio",
+    "steps": [
+      "Transcribe audio in one chat",
+      "inspect all message parts and other chat"
+    ],
+    "expected": "Original image/text preserved; only selected audio transformed; no cross-chat leakage",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-058",
+    "use_case": "UC-20",
+    "requirement": "R12",
+    "priority": "P0",
+    "scope": "native",
+    "title": "Native compatibility upgrade",
+    "preconditions": "Native candidate; exact current and prior supported LM Studio builds",
+    "steps": [
+      "Install and run native smoke on both",
+      "disable/remove plugin"
+    ],
+    "expected": "Both pass or unsupported build clearly blocks activation; normal chat remains functional",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-059",
+    "use_case": "UC-20",
+    "requirement": "R12",
+    "priority": "P0",
+    "scope": "native",
+    "title": "Native composer claim verification",
+    "preconditions": "Candidate advertised as inserting editable draft text",
+    "steps": [
+      "Transcribe before Send",
+      "inspect composer",
+      "edit text",
+      "confirm no request sent"
+    ],
+    "expected": "Editable text appears before Send through a supported API; otherwise claim must be removed",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-060",
+    "use_case": "UC-20",
+    "requirement": "R12",
+    "priority": "P1",
+    "scope": "native",
+    "title": "Native plugin interaction",
+    "preconditions": "Native candidate and another preprocessor enabled",
+    "steps": [
+      "Run both execution orders on text/image/audio message",
+      "inspect output"
+    ],
+    "expected": "No duplicate transcript, lost attachment or order-dependent corruption",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-061",
+    "use_case": "UC-04",
+    "requirement": "R04",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Numbers accents and speakers",
+    "preconditions": "F13 accented multi-speaker speech with numbers and negations",
+    "steps": [
+      "Transcribe",
+      "human-review names, amounts, negations and overlap"
+    ],
+    "expected": "No invented speaker labels; error counts reported separately; review flow makes corrections possible",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-062",
+    "use_case": "UC-02",
+    "requirement": "R02",
+    "priority": "P1",
+    "scope": "baseline",
+    "title": "Channel and sample-rate variants",
+    "preconditions": "F14 same speech in mono/stereo at 16/44.1/48 kHz and antiphase stereo",
+    "steps": [
+      "Import and transcribe each"
+    ],
+    "expected": "No speed/pitch shift; speech survives downmix; content remains within clean accuracy threshold",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-063",
+    "use_case": "UC-11",
+    "requirement": "R08",
+    "priority": "P1",
+    "scope": "future",
+    "title": "Offline model import",
+    "preconditions": "Verified model file in workspace; disconnected network",
+    "steps": [
+      "Use documented local-model import if offered",
+      "try invalid hash then valid file"
+    ],
+    "expected": "Invalid model rejected; valid file activates without network; otherwise feature remains unadvertised",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  }
+]
