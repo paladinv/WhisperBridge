@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate QA records, not the unimplemented transcription app."""
+"""Validate manual QA case coverage and execution records."""
 import argparse
 import json
 import re

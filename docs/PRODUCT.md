@@ -23,7 +23,7 @@ Target the user's current macOS context first: Apple Silicon, macOS 14 or newer,
 | R11 Lifecycle | Offline repeat use; atomic updates; cleanup of intermediate audio; no changes to original files; explicit unsaved-work handling on quit. |
 | R12 Native integration | Conditional follow-on: supported LM Studio hook, preserved message content and chat isolation, validated installation. No unsupported UI injection claim. |
 
-All limits and timing thresholds are proposed acceptance targets, not existing capabilities. If FLAC requires another decoder, bundle and license it or remove FLAC from advertised support before release. Never ask casual users to resolve codecs.
+The source implementation enforces the 500 MiB and two-hour input limits. Timing, decoder compatibility, and usability thresholds remain release targets until the manual QA matrix is complete. If FLAC fails the supported-platform decoder matrix, bundle and license a decoder or remove FLAC from advertised support before release. Never ask casual users to resolve codecs.
 
 ## Screen and interaction contract
 
@@ -35,7 +35,7 @@ During a job show the active stage and elapsed time, with Cancel. Show percentag
 
 ## Installation and architecture
 
-Proposed implementation consists of a native SwiftUI shell, platform audio decoder, pinned local Whisper runtime, and app-managed model manifest/downloader. Transcription needs neither an LLM loaded nor LM Studio's HTTP server. The UI and model work are separated so a long job does not block controls. Decode into bounded chunks with validated offsets; test chunk joins for missing/repeated words. Use CPU fallback if accelerated inference fails, with a clear retry action.
+The implementation consists of a native SwiftUI shell, AVFoundation audio decoder, pinned `whisper.cpp` runtime, and app-managed model manifest/downloader. Transcription needs neither an LLM loaded nor LM Studio's HTTP server. The UI and model work are separated so a long job does not block controls. Further release work must bound decoded-audio memory for two-hour files and validate accelerated and CPU behavior across supported Macs.
 
 First launch explains the model download size, destination and why internet is needed. Download to a partial file, check expected size/hash, then rename atomically. Insufficient storage and interrupted downloads retain a recoverable state. Do not execute unverified binaries from a model download. Distribute native libraries with the application, pin their versions, and include their notices. Normal installed app data will use its approved application container; all development/test paths in this repository must remain within the workspace per AGENTS.md.
 
