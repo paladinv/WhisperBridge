@@ -1,6 +1,7 @@
 @preconcurrency import AVFoundation
 import CoreMedia
 import Foundation
+import WhisperBridgeCore
 
 struct AudioDecoder: Sendable {
     static let targetSampleRate = 16_000.0
@@ -27,6 +28,7 @@ struct AudioDecoder: Sendable {
 
     func decode(
         _ selection: AudioSelection,
+        range: TranscriptTimeRange? = nil,
         progress: @escaping @Sendable (Double) -> Void
     ) async throws -> [Float] {
         try await Task.detached(priority: .userInitiated) {
@@ -34,6 +36,12 @@ struct AudioDecoder: Sendable {
             let tracks = try await asset.loadTracks(withMediaType: .audio)
             guard let track = tracks.first else { throw AppFailure.noAudioTrack }
             let reader = try AVAssetReader(asset: asset)
+            if let range = try range?.validated(duration: selection.duration) {
+                reader.timeRange = CMTimeRange(
+                    start: CMTime(seconds: range.start, preferredTimescale: 600),
+                    duration: CMTime(seconds: range.end - range.start, preferredTimescale: 600)
+                )
+            }
             let settings: [String: Any] = [
                 AVFormatIDKey: kAudioFormatLinearPCM,
                 AVSampleRateKey: AudioDecoder.targetSampleRate,
@@ -54,7 +62,7 @@ struct AudioDecoder: Sendable {
             }
 
             let estimatedCount = min(
-                Int(selection.duration * AudioDecoder.targetSampleRate),
+                Int((range.map { $0.end - $0.start } ?? selection.duration) * AudioDecoder.targetSampleRate),
                 Int(FilePolicy.maximumDuration * AudioDecoder.targetSampleRate)
             )
             var samples: [Float] = []
@@ -82,8 +90,10 @@ struct AudioDecoder: Sendable {
                 }
 
                 let time = CMSampleBufferGetPresentationTimeStamp(sampleBuffer).seconds
-                if time.isFinite, selection.duration > 0 {
-                    progress(min(max(time / selection.duration, 0), 0.99))
+                let start = range?.start ?? 0
+                let duration = range.map { $0.end - $0.start } ?? selection.duration
+                if time.isFinite, duration > 0 {
+                    progress(min(max((time - start) / duration, 0), 0.99))
                 }
             }
 

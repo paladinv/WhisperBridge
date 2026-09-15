@@ -1,284 +1,224 @@
 import SwiftUI
+import WhisperBridgeCore
 
 struct ContentView: View {
     @ObservedObject var model: AppModel
-    @State private var isDropTargeted = false
-
-    private let ink = Color(red: 20 / 255, green: 58 / 255, blue: 67 / 255)
-    private let mint = Color(red: 103 / 255, green: 221 / 255, blue: 208 / 255)
+    @State private var showAdvanced = false
+    @State private var showSpeakers = false
 
     var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [Color(nsColor: .windowBackgroundColor), mint.opacity(0.08)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-
-            ScrollView {
-                VStack(spacing: 22) {
-                    header
-                    if !model.isModelInstalled { modelCard }
-                    sourceCard
-                    if let message = model.errorMessage { errorCard(message) }
-                    if model.isBusy { progressCard }
-                    if model.transcript != nil { transcriptCard }
-                    privacyNote
-                }
-                .frame(maxWidth: 880)
-                .padding(32)
-            }
-        }
-        .tint(ink)
-    }
-
-    private var header: some View {
-        HStack(spacing: 16) {
-            Image("BrandIcon")
-                .resizable()
-                .frame(width: 66, height: 66)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 3) {
-                Text("WhisperBridge")
-                    .font(.system(size: 30, weight: .bold, design: .rounded))
-                    .foregroundStyle(ink)
-                Text("Audio into words for LM Studio")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-            Label(model.phase.label, systemImage: statusSymbol)
-                .font(.callout.weight(.semibold))
-                .foregroundStyle(model.phase == .failed ? .red : ink)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(.thinMaterial, in: Capsule())
-                .accessibilityLabel("Status: \(model.phase.label)")
-        }
-    }
-
-    private var modelCard: some View {
-        Card {
-            HStack(alignment: .top, spacing: 16) {
-                Image(systemName: "waveform.badge.plus")
-                    .font(.system(size: 28))
-                    .foregroundStyle(ink)
-                    .frame(width: 44, height: 44)
-                    .background(mint.opacity(0.2), in: RoundedRectangle(cornerRadius: 12))
-                    .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 7) {
-                    Text("One-time speech model download")
-                        .font(.headline)
-                    Text("\(ModelManifest.recommended.displayName) is \(ModelManifest.recommended.formattedSize). It stays on this Mac and handles multiple languages.")
-                        .foregroundStyle(.secondary)
-                    Text("Internet is used only for this download. Audio and transcripts are processed locally.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer(minLength: 12)
-                Button("Download Model") { model.downloadModel() }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(model.isBusy)
-            }
-        }
-    }
-
-    private var sourceCard: some View {
-        Card {
-            VStack(alignment: .leading, spacing: 16) {
+        NavigationSplitView {
+            VStack(spacing: 8) {
                 HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Audio file")
-                            .font(.headline)
-                        if let selection = model.selection {
-                            Text(selection.displayName)
-                                .font(.title3.weight(.semibold))
-                                .lineLimit(1)
-                            Text(selection.detail)
-                                .font(.callout)
-                                .foregroundStyle(.secondary)
-                        } else {
-                            Text("Drop one recording here or choose a file")
-                                .foregroundStyle(.secondary)
+                    Image("BrandIcon").resizable().frame(width: 34, height: 34)
+                    Text("Transcript Studio").font(.headline)
+                }.padding(.top, 10)
+                TextField("Search text or speakers", text: $model.searchText)
+                    .textFieldStyle(.roundedBorder)
+                    .onSubmit { model.searchLibrary() }
+                    .padding(.horizontal)
+                List(selection: Binding(get: { model.currentDocument?.id }, set: { if let id = $0 { model.selectTranscript(id) } })) {
+                    if model.searchText.isEmpty {
+                        ForEach(model.library) { item in
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(item.title).lineLimit(1)
+                                Text(item.speakerNames.joined(separator: ", ")).font(.caption).foregroundStyle(.secondary)
+                            }.tag(item.id)
                         }
-                    }
-                    Spacer()
-                    Button(model.selection == nil ? "Choose Audio…" : "Choose Another…") {
-                        model.chooseAudio()
-                    }
-                    .keyboardShortcut("o")
-                    .disabled(model.isBusy)
-                }
-
-                Divider()
-
-                HStack(alignment: .bottom, spacing: 14) {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("Spoken language")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                        Picker("Spoken language", selection: $model.language) {
-                            ForEach(LanguageOption.allCases) { option in
-                                Text(option.title).tag(option)
-                            }
-                        }
-                        .labelsHidden()
-                        .frame(width: 210)
-                    }
-                    Spacer()
-                    if model.isBusy {
-                        Button("Cancel") { model.cancelWork() }
-                            .keyboardShortcut(.cancelAction)
                     } else {
-                        Button("Transcribe") { model.transcribe() }
-                            .buttonStyle(.borderedProminent)
-                            .keyboardShortcut(.defaultAction)
-                            .disabled(!model.canTranscribe)
+                        ForEach(model.searchResults) { result in
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(result.title).font(.headline)
+                                Text(result.speakerName ?? "Transcript").font(.caption)
+                                Text(result.snippet).lineLimit(3).foregroundStyle(.secondary)
+                            }.tag(result.transcriptID)
+                        }
                     }
                 }
             }
-            .overlay {
-                RoundedRectangle(cornerRadius: 18)
-                    .stroke(isDropTargeted ? mint : .clear, lineWidth: 3)
-                    .padding(-20)
-                    .allowsHitTesting(false)
+            .navigationSplitViewColumnWidth(min: 230, ideal: 280)
+        } detail: {
+            VStack(spacing: 0) {
+                toolbar
+                Divider()
+                if let document = model.currentDocument { editor(document) }
+                else { welcome }
+                status
             }
         }
-        .dropDestination(for: URL.self) { urls, _ in
-            model.receiveDrop(urls)
-            return !urls.isEmpty
-        } isTargeted: { isDropTargeted = $0 }
+        .frame(minWidth: 980, minHeight: 650)
     }
 
-    private var progressCard: some View {
-        Card {
-            HStack(spacing: 14) {
-                ProgressView(value: progressIsDeterminate ? model.progress : nil)
-                    .progressViewStyle(.circular)
-                    .controlSize(.small)
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(model.phase.label)
-                        .font(.headline)
-                    Text(model.statusMessage)
-                        .font(.callout)
+    private var toolbar: some View {
+        HStack(spacing: 10) {
+            Button("Import Audio…") { model.chooseAudio() }
+            Button("Import Transcript…") { model.importTranscriptFile() }
+            Button("Play/Pause", systemImage: "playpause") { model.playPause() }.disabled(model.selection == nil)
+            Divider().frame(height: 20)
+            Button("Transcribe All") { model.transcribe() }.disabled(!model.canTranscribe)
+            Button("Transcribe Selection") { model.transcribeSelection() }.disabled(!model.canTranscribe || model.rangeEnd <= model.rangeStart)
+            if model.isBusy { Button("Cancel") { model.cancelWork() } }
+            Spacer()
+            Toggle("Compact", isOn: $model.compactMode).toggleStyle(.button)
+            Toggle("Hide fillers", isOn: Binding(get: { model.hideFillers }, set: { model.setFillersHidden($0) })).toggleStyle(.button)
+            Button("Export…") { model.exportDocument() }.disabled(model.currentDocument == nil)
+            Button("Copy for LM Studio") { model.copyDocumentForLMStudio() }.buttonStyle(.borderedProminent).disabled(model.currentDocument == nil)
+        }.padding(12)
+    }
+
+    private var welcome: some View {
+        VStack(spacing: 20) {
+            Image("BrandIcon").resizable().frame(width: 88, height: 88)
+            Text("WhisperBridge Transcript Studio").font(.largeTitle.bold())
+            Text("Import a recording to create a searchable, editable local transcript.").foregroundStyle(.secondary)
+            if !model.isModelInstalled {
+                Button("Download Whisper Base") { model.downloadModel() }.buttonStyle(.borderedProminent)
+            } else {
+                Button("Choose Audio…") { model.chooseAudio() }.buttonStyle(.borderedProminent)
+            }
+        }.frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func editor(_ document: TranscriptDocument) -> some View {
+        VStack(spacing: 0) {
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(document.title).font(.title2.bold())
+                    Text("\(document.sourceFilename) · \(Int(document.duration / 60)):\(String(format: "%02d", Int(document.duration) % 60))")
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                if progressIsDeterminate {
-                    Text(model.progress, format: .percent.precision(.fractionLength(0)))
-                        .monospacedDigit()
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(model.phase.label). \(model.statusMessage)")
-    }
+                Picker("Preset", selection: Binding(get: { model.decodingPreset }, set: { model.applyPreset($0) })) {
+                    ForEach(DecodingPreset.allCases, id: \.self) { Text($0.title).tag($0) }
+                }.frame(width: 170)
+                Picker("Timestamps", selection: $model.timestampGranularity) {
+                    ForEach(TimestampGranularity.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
+                }.frame(width: 160)
+                Toggle("Diarize", isOn: $model.diarizationEnabled)
+                    .help("Requires macOS 15 and verified FluidAudio assets")
+                Button("Speakers…") { showSpeakers.toggle() }
+                    .popover(isPresented: $showSpeakers) { speakerEditor(document).padding().frame(width: 380) }
+                Button("Advanced…") { showAdvanced.toggle() }.popover(isPresented: $showAdvanced) { advanced.padding().frame(width: 360) }
+            }.padding()
 
-    private func errorCard(_ message: String) -> some View {
-        Card {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.orange)
-                    .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Couldn’t complete that step")
-                        .font(.headline)
-                    Text(message)
-                        .foregroundStyle(.secondary)
-                }
+            VStack(spacing: 5) {
+                GeometryReader { proxy in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 6).fill(.secondary.opacity(0.12))
+                        ForEach(0..<80, id: \.self) { index in
+                            let height = 5 + CGFloat((index * 37) % 25)
+                            Capsule().fill(.teal.opacity(0.6)).frame(width: 2, height: height)
+                                .offset(x: CGFloat(index) / 80 * proxy.size.width, y: (proxy.size.height - height) / 2)
+                        }
+                    }
+                }.frame(height: 42).accessibilityLabel("Audio waveform overview")
+                HStack {
+                    Text("Start"); Slider(value: $model.rangeStart, in: 0...max(document.duration, 0.01))
+                    Text(TranscriptFormatting.timestamp(model.rangeStart))
+                    Text("End"); Slider(value: $model.rangeEnd, in: 0...max(document.duration, 0.01))
+                    Text(TranscriptFormatting.timestamp(model.rangeEnd))
+                }.font(.caption.monospacedDigit())
+            }.padding(.horizontal)
+
+            HStack {
+                Menu("Assign Speaker") {
+                    Button("Unassigned") { model.assignSpeaker(nil) }
+                    ForEach(document.speakers) { speaker in Button(speaker.name) { model.assignSpeaker(speaker.id) } }
+                    Divider(); Button("Add Speaker") { model.addSpeaker() }
+                }.disabled(model.selectedSegmentIDs.isEmpty)
+                Button("Merge") { model.mergeSelectedSegments() }.disabled(model.selectedSegmentIDs.count < 2)
+                Button("Split at midpoint") { model.splitSelectedSegment() }.disabled(model.selectedSegmentIDs.count != 1)
+                Button("Delete") { model.deleteSelectedSegments() }.disabled(model.selectedSegmentIDs.isEmpty)
+                Button("Restore") { model.restoreSelectedSegments() }.disabled(model.selectedSegmentIDs.isEmpty)
                 Spacer()
-                Button("Dismiss") { model.dismissError() }
+                Text("\(document.segments.filter { !$0.isDeleted }.count) segments").foregroundStyle(.secondary)
+            }.padding(10)
+
+            List(selection: $model.selectedSegmentIDs) {
+                ForEach(document.segments) { segment in
+                    HStack(alignment: .top, spacing: 12) {
+                        if !model.compactMode {
+                            Text(TranscriptFormatting.timestamp(segment.start)).font(.caption.monospacedDigit()).frame(width: 86, alignment: .leading)
+                        }
+                        Text(document.speakers.first(where: { $0.id == segment.speakerID })?.name ?? "—")
+                            .frame(width: 100, alignment: .leading).foregroundStyle(.secondary)
+                        TextField("Transcript segment", text: Binding(get: { segment.editedText }, set: { model.updateSegment(id: segment.id, text: $0) }), axis: .vertical)
+                            .textFieldStyle(.plain)
+                        if segment.hasOverlappingSpeech { Image(systemName: "person.2.wave.2").help("Overlapping speech") }
+                        if segment.isDeleted { Text("Deleted").foregroundStyle(.red).font(.caption) }
+                    }.tag(segment.id).opacity(segment.isDeleted ? 0.5 : 1)
+                }
             }
         }
     }
 
-    private var transcriptCard: some View {
-        Card {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("Review transcript")
-                            .font(.headline)
-                        Text("Correct names or numbers before adding this text to your prompt.")
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    Text(model.characterCount)
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                }
+    private var advanced: some View {
+        Form {
+            Picker("Strategy", selection: $model.decodingOptions.strategy) {
+                Text("Greedy").tag(DecodingStrategy.greedy); Text("Beam search").tag(DecodingStrategy.beam)
+            }
+            Stepper("Beam size: \(model.decodingOptions.beamSize)", value: $model.decodingOptions.beamSize, in: 1...10)
+            Stepper("Greedy best-of: \(model.decodingOptions.greedyBestOf)", value: $model.decodingOptions.greedyBestOf, in: 1...10)
+            LabeledContent("Temperature") { TextField("", value: $model.decodingOptions.temperature, format: .number).frame(width: 80) }
+            LabeledContent("No-speech threshold") { TextField("", value: $model.decodingOptions.noSpeechThreshold, format: .number).frame(width: 80) }
+            TextField("Initial prompt", text: Binding(get: { model.decodingOptions.initialPrompt ?? "" }, set: { model.decodingOptions.initialPrompt = $0.isEmpty ? nil : $0 }))
+        }
+    }
 
-                TextEditor(text: $model.editedText)
-                    .font(.body)
-                    .scrollContentBackground(.hidden)
-                    .padding(10)
-                    .frame(minHeight: 210)
-                    .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(.quaternary))
-                    .accessibilityLabel("Editable transcript")
-
-                HStack {
-                    Button("Reset Edits") { model.resetTranscript() }
-                        .disabled(!model.transcriptIsDirty)
-                    Button("Clear") { model.clearTranscript() }
-                    Spacer()
-                    Button("Save Text…") { model.saveTranscript() }
-                        .disabled(!model.hasTranscript)
-                    Button {
-                        model.copyTranscript()
-                    } label: {
-                        Label("Copy for LM Studio", systemImage: "doc.on.doc")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(!model.hasTranscript)
-                }
-                Text(model.statusMessage)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .accessibilityLabel("Status: \(model.statusMessage)")
+    private func speakerEditor(_ document: TranscriptDocument) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Speakers").font(.headline)
+                Spacer()
+                Button("Add") { model.addSpeaker() }
+            }
+            if document.speakers.isEmpty {
+                Text("Add a speaker, then assign selected transcript segments.").foregroundStyle(.secondary)
+            }
+            ForEach(document.speakers) { speaker in
+                SpeakerEditorRow(
+                    speaker: speaker,
+                    destinations: document.speakers.filter { $0.id != speaker.id },
+                    rename: { model.renameSpeaker(speaker.id, name: $0) },
+                    merge: { model.mergeSpeaker(speaker.id, into: $0) }
+                )
             }
         }
     }
 
-    private var privacyNote: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "lock.shield")
-                .foregroundStyle(ink)
-            Text("Local by default. Your recording and transcript are not uploaded. Copying places text on the macOS clipboard, which may sync through your system settings.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 4)
-    }
-
-    private var progressIsDeterminate: Bool {
-        model.phase == .decoding || model.phase == .transcribing
-    }
-
-    private var statusSymbol: String {
-        switch model.phase {
-        case .needsModel: "arrow.down.circle"
-        case .downloadingModel, .checkingModel, .inspectingAudio, .decoding, .transcribing: "hourglass"
-        case .review: "checkmark.circle.fill"
-        case .failed: "exclamationmark.circle.fill"
-        case .ready: "checkmark.circle"
-        }
+    private var status: some View {
+        HStack {
+            if model.isBusy { ProgressView(value: model.progress).frame(width: 140) }
+            Text(model.errorMessage ?? model.statusMessage).foregroundStyle(model.errorMessage == nil ? Color.secondary : Color.red)
+            Spacer()
+        }.font(.caption).padding(10).background(.bar)
     }
 }
 
-private struct Card<Content: View>: View {
-    @ViewBuilder let content: Content
+private struct SpeakerEditorRow: View {
+    let speaker: TranscriptSpeaker
+    let destinations: [TranscriptSpeaker]
+    let rename: (String) -> Void
+    let merge: (UUID) -> Void
+    @State private var draft: String
+
+    init(speaker: TranscriptSpeaker, destinations: [TranscriptSpeaker], rename: @escaping (String) -> Void, merge: @escaping (UUID) -> Void) {
+        self.speaker = speaker
+        self.destinations = destinations
+        self.rename = rename
+        self.merge = merge
+        _draft = State(initialValue: speaker.name)
+    }
 
     var body: some View {
-        content
-            .padding(20)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
-            .overlay(RoundedRectangle(cornerRadius: 18).stroke(.white.opacity(0.22)))
-            .shadow(color: .black.opacity(0.06), radius: 16, y: 6)
+        HStack {
+            TextField("Speaker name", text: $draft)
+                .onSubmit { if !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { rename(draft) } }
+            Menu("Merge into") {
+                ForEach(destinations) { destination in
+                    Button(destination.name) { merge(destination.id) }
+                }
+            }.disabled(destinations.isEmpty)
+        }
     }
 }

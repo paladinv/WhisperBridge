@@ -41,7 +41,7 @@ test("cancellation terminates a running helper promptly", async () => {
   assert.ok(performance.now() - start < 2_500);
 });
 
-test("sends protocol version 2 contract for every implemented adapter", async () => {
+test("sends protocol version 3 contract for every implemented adapter", async () => {
   const fixture = path.join(__dirname, "fixtures", "fake-helper.mjs");
   for (const selected of MODEL_CATALOG.filter(candidate => candidate.engine !== "canaryQwen")) {
     const result = await runHelper(

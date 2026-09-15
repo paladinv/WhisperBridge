@@ -37,13 +37,15 @@ xcodebuild \
   COMPILER_INDEX_STORE_ENABLE=NO \
   build > "$PROJECT_ROOT/.build-artifacts/plugin-build.log" 2>&1
 
-xcrun xcresulttool get build-results \
+xcrun xcresulttool get object --legacy \
   --path "$RESULT_BUNDLE" \
-  --compact > "$RESULT_JSON"
+  --format json > "$RESULT_JSON"
 
 rm -rf "$PLUGIN_NATIVE/Frameworks/whisper.framework"
+rm -rf "$PLUGIN_NATIVE/Frameworks/WhisperBridgeCore.framework"
 mkdir -p "$PLUGIN_NATIVE/Frameworks/whisper.framework/Versions/A"
 cp "$DERIVED_DATA/Build/Products/Release/WhisperBridgeCLI" "$PLUGIN_NATIVE/WhisperBridgeCLI"
+cp -R "$DERIVED_DATA/Build/Products/Release/WhisperBridgeCore.framework" "$PLUGIN_NATIVE/Frameworks/WhisperBridgeCore.framework"
 rm -rf "$PLUGIN_NATIVE/mlx-swift_Cmlx.bundle"
 cp -R "$DERIVED_DATA/Build/Products/Release/mlx-swift_Cmlx.bundle" "$PLUGIN_NATIVE/mlx-swift_Cmlx.bundle"
 cp "$PROJECT_ROOT/Vendor/whisper.framework/Versions/A/whisper" "$PLUGIN_NATIVE/Frameworks/whisper.framework/Versions/A/whisper"

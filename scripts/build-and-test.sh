@@ -38,9 +38,9 @@ xcodebuild "${COMMON_ARGS[@]}" \
   -resultBundlePath "$ARTIFACT_ROOT/results/build-$RUN_ID.xcresult" \
   build-for-testing > "$ARTIFACT_ROOT/logs/build-$RUN_ID.log" 2>&1
 
-xcrun xcresulttool get build-results \
+xcrun xcresulttool get object --legacy \
   --path "$ARTIFACT_ROOT/results/build-$RUN_ID.xcresult" \
-  --compact > "$ARTIFACT_ROOT/results/build-$RUN_ID.json"
+  --format json > "$ARTIFACT_ROOT/results/build-$RUN_ID.json"
 
 codesign --force --deep --sign - \
   "$RUN_ROOT/DerivedData/Build/Products/Debug/WhisperBridgeTests.xctest" \
@@ -50,9 +50,9 @@ xcodebuild test-without-building "${COMMON_ARGS[@]}" \
   -resultBundlePath "$ARTIFACT_ROOT/results/test-$RUN_ID.xcresult" \
   > "$ARTIFACT_ROOT/logs/test-$RUN_ID.log" 2>&1
 
-xcrun xcresulttool get test-results tests \
+xcrun xcresulttool get object --legacy \
   --path "$ARTIFACT_ROOT/results/test-$RUN_ID.xcresult" \
-  --compact > "$ARTIFACT_ROOT/results/test-$RUN_ID.json"
+  --format json > "$ARTIFACT_ROOT/results/test-$RUN_ID.json"
 
 print "Build and tests passed."
 print "Logs: $ARTIFACT_ROOT/logs"

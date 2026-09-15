@@ -1071,3 +1071,21 @@ P1 · native · UC-20 · R12
 **Pass condition:** Both paths resolve the same catalog model, helper request, transcript format, language behavior, and filename behavior
 
 **Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## Transcript Studio cases (unexecuted release QA)
+
+These cases describe required hands-on checks. They are not marked passed by unit tests.
+
+- **TS-01 Library import and deduplication:** Import the same WAV twice. Confirm one managed audio asset and independently editable transcript records.
+- **TS-02 FTS and speaker search:** Populate at least 100,000 segments. Search a rare phrase and a renamed speaker; verify bounded highlighted snippets, stable pagination, and the 150 ms M4 Max gate.
+- **TS-03 Raw/presentation separation:** Edit text, hide fillers, delete a segment, restore it, and reset. Confirm raw recognition and word timing never change.
+- **TS-04 Manual speakers:** Add more than eight speakers, rename, assign multiple segments, split a correction into a new speaker, and merge speakers. Restart and verify persistence.
+- **TS-05 Selected range:** Select 01:30–03:45, transcribe it, undo, and retry. Confirm only overlapping segments are replaced and decoding reads only that audio range.
+- **TS-06 Timing modes:** Generate segment and word timestamps, then enable Compact. Confirm Compact changes display/export presentation without changing stored timing.
+- **TS-07 Diarization:** On macOS 15+, run single-speaker, two-speaker, and overlap fixtures. Verify anonymous labels, monotonic intervals, correction, cancellation, and memory release. On macOS 14 verify the preflight error.
+- **TS-08 Decoder controls:** Exercise Fast, Balanced, Accurate, valid beam sizes 1 and 10, and every invalid bound. Non-Whisper models must reject unsupported advanced values before inference.
+- **TS-09 Export matrix:** Round-trip TXT, Markdown, JSON, CSV, SRT, VTT, custom placeholders, STTTTS v1 `.tst`, and WhisperBridge v2 `.tst` with Unicode names.
+- **TS-10 Archive abuse:** Reject traversal, absolute paths, symlinks, duplicate paths, ZIP bombs, oversized entries, corrupt manifests, cancellation, and partial database records.
+- **TS-11 LM Studio opt-in:** Confirm `library=off` leaves SQLite untouched and `library=on` saves only after transcription and prompt validation succeed.
+- **TS-12 LM Studio tools:** Search and fetch an excerpt through tool calling. Verify bounded text/metadata and absence of audio bytes and private paths.
+- **TS-13 Regression/performance:** Verify the 10,000-call text-only gate, Whisper Base within 10% of baseline, serial diarization measurements, helper exit, and final memory release.

@@ -5,7 +5,7 @@ process.stdin.setEncoding("utf8");
 process.stdin.on("data", chunk => { request += chunk; });
 process.stdin.on("end", () => {
   const parsed = JSON.parse(request);
-  if (parsed.version !== 2 || !parsed.modelID || !parsed.engine || !parsed.modelDirectory) process.exit(2);
+  if (parsed.version !== 3 || !parsed.modelID || !parsed.engine || !parsed.modelDirectory) process.exit(2);
   process.stdout.write(JSON.stringify({ type: "stage", stage: "transcribing" }) + "\n");
   const result = {
     type: "result",

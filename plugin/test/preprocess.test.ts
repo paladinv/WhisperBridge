@@ -204,6 +204,21 @@ test("unsupported language fails before model or helper activity", async () => {
   assert.deepEqual(context.consumed(), []);
 });
 
+test("selection duration is validated before model and transcription work", async () => {
+  const context = harness("/wb start=00:10 end=00:20\nTranscribe", [file("meeting.wav")]);
+  let modelCalls = 0;
+  let helperCalls = 0;
+  const preprocess = createPreprocessor(dependencies({
+    inspectAudioDuration: async () => 15,
+    ensureModel: async () => { modelCalls += 1; return "/model"; },
+    runHelper: async () => { helperCalls += 1; return { text: "unexpected" }; }
+  }));
+  await assert.rejects(preprocess(context.controller, context.message), /beyond this recording/);
+  assert.equal(modelCalls, 0);
+  assert.equal(helperCalls, 0);
+  assert.deepEqual(context.consumed(), []);
+});
+
 test("a chat directive selects the model and is removed from the outgoing instruction", async () => {
   const context = harness("/wb model=better language=fr filename=off\nSummarize this", [file("meeting.wav")]);
   let selectedModel = "";

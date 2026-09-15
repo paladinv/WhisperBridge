@@ -1,12 +1,21 @@
 @preconcurrency import MLX
 import MLXAudioSTT
 import Foundation
+import WhisperBridgeCore
 
 struct HelperSegment: Codable, Equatable, Sendable {
     let start: Double?
     let end: Double?
     let text: String
     let speaker: String?
+    var words: [HelperWord]? = nil
+    var overlap: Bool? = nil
+}
+
+struct HelperWord: Codable, Equatable, Sendable {
+    let start: Double?
+    let end: Double?
+    let text: String
 }
 
 struct MLXTranscriptionResult: Sendable {

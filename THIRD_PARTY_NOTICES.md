@@ -24,3 +24,9 @@ The following model files download only after the user selects a profile and sen
 - IBM Granite 4.0 Speech, Apache 2.0, using the pinned MLX 5-bit community conversion.
 
 The repository records inactive MOSS and Canary-Qwen descriptors for adapter development. Those models are not offered for download because their native checkpoints have not passed release gates. See `docs/MODELS.md` for revisions and the current gate reasons.
+
+WhisperBridge links [FluidAudio 0.15.5](https://github.com/FluidInference/FluidAudio/releases/tag/0.15.5), commit `19600a485baa4998812e4654b70d2bab8f2c9949`, under Apache License 2.0 for optional on-device speaker diarization. Diarization assets are separate downloads from FluidInference and carry CC BY 4.0 attribution.
+
+WhisperBridge links [ZIPFoundation 0.9.20](https://github.com/weichsel/ZIPFoundation/releases/tag/0.9.20), commit `22787ffb59de99e5dc1fbfe80b19c97a904ad48d`, under the MIT License for bounded `.tst` archive handling.
+
+The native subtitle, custom-export, overlap assignment, decoder-setting, compact-display, filler, project, and editing behavior described in [docs/STTTTS_REUSE.md](docs/STTTTS_REUSE.md) was independently ported from STTTTS commit `bbb51c5` with the repository owner's authorization. No STTTTS Python runtime or dependency is distributed.

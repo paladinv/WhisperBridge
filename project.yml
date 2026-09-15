@@ -14,7 +14,28 @@ packages:
   MLXAudio:
     url: https://github.com/Blaizzy/mlx-audio-swift.git
     exactVersion: 0.1.3
+  FluidAudio:
+    url: https://github.com/FluidInference/FluidAudio.git
+    exactVersion: 0.15.5
+  ZIPFoundation:
+    url: https://github.com/weichsel/ZIPFoundation.git
+    exactVersion: 0.9.20
 targets:
+  WhisperBridgeCore:
+    type: framework
+    platform: macOS
+    sources:
+      - path: Sources/WhisperBridgeCore
+    dependencies:
+      - sdk: libsqlite3.tbd
+      - package: ZIPFoundation
+        product: ZIPFoundation
+      - package: FluidAudio
+        product: FluidAudio
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.paladinv.WhisperBridgeCore
+        GENERATE_INFOPLIST_FILE: YES
   WhisperBridge:
     type: application
     platform: macOS
@@ -23,6 +44,8 @@ targets:
     resources:
       - path: Sources/WhisperBridge/Resources
     dependencies:
+      - target: WhisperBridgeCore
+      - package: ZIPFoundation
       - framework: Vendor/whisper.framework
         embed: true
     settings:
@@ -51,6 +74,7 @@ targets:
       - path: Sources/WhisperBridge/AudioDecoder.swift
       - path: Sources/WhisperBridge/WhisperEngine.swift
     dependencies:
+      - target: WhisperBridgeCore
       - framework: Vendor/whisper.framework
         embed: false
     settings:
@@ -67,6 +91,7 @@ targets:
       - path: Sources/WhisperBridge/AudioDecoder.swift
       - path: Sources/WhisperBridge/WhisperEngine.swift
     dependencies:
+      - target: WhisperBridgeCore
       - framework: Vendor/whisper.framework
         embed: false
       - package: MLXAudio

@@ -1,13 +1,27 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { MAXIMUM_BYTES, TRANSCRIPT_MARKER } from "../src/constants";
-import { formatPrompt, isSupportedAudio, safeDisplayName, validateAudio } from "../src/prompt";
+import { formatPrompt, formatStructuredTranscript, isSupportedAudio, safeDisplayName, validateAudio } from "../src/prompt";
 import { parseSettingsMarker } from "../src/settings";
 
 const settings = {
   modelID: "whisper-base-multilingual",
   language: "auto",
   includeFilename: true,
+  diarization: false,
+  timestampGranularity: "segment" as const,
+  compact: false,
+  removeFillers: false,
+  saveToLibrary: false,
+  preset: "balanced" as const,
+  strategy: "greedy" as const,
+  beamSize: 5,
+  greedyBestOf: 5,
+  patience: 1,
+  temperature: 0,
+  temperatureIncrement: 0.2,
+  noSpeechThreshold: 0.6,
+  logProbabilityThreshold: -1,
   scope: "inherit" as const
 };
 
@@ -46,4 +60,10 @@ test("rejects an empty transcript", () => {
 
 test("sanitizes control characters in displayed filenames", () => {
   assert.equal(safeDisplayName("meeting\n\u0000name.wav"), "meeting name.wav");
+});
+
+test("renders speaker segments, timestamps, compact mode, and filler presentation", () => {
+  const result = { text: "Um, hello there", segments: [{ start: 1.25, end: 2, speaker: "Speaker 1", text: "Um, hello there" }] };
+  assert.equal(formatStructuredTranscript(result, { ...settings, removeFillers: true }), "[00:00:01.250] Speaker 1: hello there");
+  assert.equal(formatStructuredTranscript(result, { ...settings, compact: true }), "Speaker 1: Um, hello there");
 });

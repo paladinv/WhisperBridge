@@ -1,6 +1,7 @@
 import path from "node:path";
 import { AUDIO_EXTENSIONS, MAXIMUM_BYTES, TRANSCRIPT_MARKER } from "./constants";
 import { formatSettingsLine, type ResolvedSpeechSettings } from "./settings";
+import type { HelperResult } from "./helper";
 
 export interface AudioCandidate {
   name: string;
@@ -49,4 +50,33 @@ export function formatPrompt(
     `Audio transcript${source}:\n--- BEGIN WHISPERBRIDGE TRANSCRIPT ---\n${cleanTranscript}\n--- END WHISPERBRIDGE TRANSCRIPT ---`
   );
   return sections.join("\n\n");
+}
+
+const fillerPattern = /\b(?:um+|uh+|erm|er)\b[,.]?\s*/gi;
+
+export function formatStructuredTranscript(result: HelperResult, settings: ResolvedSpeechSettings): string {
+  if (!result.segments?.length || settings.timestampGranularity === "none") {
+    return settings.removeFillers ? result.text.replace(fillerPattern, "").replace(/\s+([,.!?;:])/g, "$1").trim() : result.text;
+  }
+  return result.segments.map(segment => {
+    let text = settings.removeFillers ? segment.text.replace(fillerPattern, "").replace(/\s+([,.!?;:])/g, "$1").trim() : segment.text;
+    if (settings.timestampGranularity === "word" && segment.words?.length) {
+      text = segment.words.map(word => {
+        const value = settings.removeFillers && /^(?:um+|uh+|erm|er)[,.]?$/i.test(word.text.trim()) ? "" : word.text;
+        return value && word.start !== undefined && !settings.compact ? `[${formatTime(word.start)}]${value}` : value;
+      }).join("").trim();
+    }
+    const timestamp = !settings.compact && segment.start !== undefined ? `[${formatTime(segment.start)}] ` : "";
+    const speaker = segment.speaker ? `${segment.speaker}: ` : "";
+    return `${timestamp}${speaker}${text}`.trimEnd();
+  }).filter(Boolean).join("\n");
+}
+
+function formatTime(seconds: number): string {
+  const total = Math.max(0, Math.round(seconds * 1000));
+  const hours = Math.floor(total / 3_600_000);
+  const minutes = Math.floor(total / 60_000) % 60;
+  const secs = Math.floor(total / 1000) % 60;
+  const millis = total % 1000;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}.${String(millis).padStart(3, "0")}`;
 }

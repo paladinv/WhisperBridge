@@ -4,7 +4,7 @@ import path from "node:path";
 import type { ModelDescriptor, OutputStyle } from "./modelCatalog";
 
 export interface HelperProgress {
-  stage: "validating" | "decoding" | "transcribing";
+  stage: "validating" | "decoding" | "transcribing" | "diarizing";
   fraction?: number;
 }
 
@@ -17,6 +17,9 @@ interface HelperEvent {
   code?: string;
   message?: string;
   segments?: HelperSegment[];
+  speakers?: Array<{ id: string; name: string }>;
+  duration?: number;
+  transcriptID?: string;
 }
 
 export interface HelperSegment {
@@ -24,12 +27,36 @@ export interface HelperSegment {
   end?: number;
   text: string;
   speaker?: string;
+  words?: Array<{ start?: number; end?: number; text: string }>;
+  overlap?: boolean;
 }
 
 export interface HelperResult {
   text: string;
   detectedLanguage?: string;
   segments?: HelperSegment[];
+  speakers?: Array<{ id: string; name: string }>;
+  duration?: number;
+  transcriptID?: string;
+}
+
+export interface HelperV3Options {
+  timeRange?: { start: number; end: number };
+  timestampGranularity?: "none" | "segment" | "word";
+  diarization?: boolean;
+  diarizationModelDirectory?: string;
+  decodingOptions?: {
+    strategy: "greedy" | "beam";
+    beamSize: number;
+    greedyBestOf: number;
+    patience: number;
+    temperature: number;
+    temperatureIncrement: number;
+    initialPrompt?: string;
+    noSpeechThreshold: number;
+    logProbabilityThreshold: number;
+  };
+  library?: { enabled: boolean; dataDirectory?: string; title?: string };
 }
 
 export async function resolveHelperPath(environment: NodeJS.ProcessEnv = process.env): Promise<string> {
@@ -58,7 +85,8 @@ export async function runHelper(
   language: string,
   signal: AbortSignal,
   onProgress: (progress: HelperProgress) => void,
-  helperPath?: string
+  helperPath?: string,
+  options: HelperV3Options = {}
 ): Promise<HelperResult> {
   const executable = helperPath ?? (await resolveHelperPath());
   return await new Promise<HelperResult>((resolve, reject) => {
@@ -95,6 +123,9 @@ export async function runHelper(
       if (event.type === "result" && event.text) {
         result = { text: event.text, detectedLanguage: event.detectedLanguage };
         if (event.segments) result.segments = event.segments;
+        if (event.speakers) result.speakers = event.speakers;
+        if (event.duration !== undefined) result.duration = event.duration;
+        if (event.transcriptID) result.transcriptID = event.transcriptID;
       }
       if (event.type === "error") {
         helperError = new Error(event.message || "Transcription failed.");
@@ -128,7 +159,7 @@ export async function runHelper(
     });
     const outputStyle: OutputStyle = model.outputStyle;
     child.stdin.end(JSON.stringify({
-      version: 2,
+      version: 3,
       audioPath,
       modelID: model.id,
       engine: model.engine,
@@ -136,8 +167,34 @@ export async function runHelper(
       modelDirectory,
       entryFile: model.entryFile,
       language,
-      outputStyle
+      outputStyle,
+      ...options
     }));
     if (signal.aborted) abort();
+  });
+}
+
+export async function inspectAudioDuration(audioPath: string, helperPath?: string): Promise<number> {
+  const executable = helperPath ?? await resolveHelperPath();
+  return await new Promise<number>((resolve, reject) => {
+    const child = spawn(executable, [], { stdio: ["pipe", "pipe", "pipe"] });
+    let output = "";
+    let diagnostics = "";
+    child.stdout.setEncoding("utf8");
+    child.stdout.on("data", chunk => { output += String(chunk); });
+    child.stderr.setEncoding("utf8");
+    child.stderr.on("data", chunk => { diagnostics = (diagnostics + String(chunk)).slice(-4096); });
+    child.on("error", reject);
+    child.on("close", code => {
+      for (const line of output.split("\n")) {
+        try {
+          const event = JSON.parse(line) as { type: string; duration?: number; message?: string };
+          if (event.type === "result" && Number.isFinite(event.duration)) { resolve(event.duration!); return; }
+          if (event.type === "error") { reject(new Error(event.message ?? "Audio validation failed.")); return; }
+        } catch { /* ignore incomplete diagnostics */ }
+      }
+      reject(new Error(diagnostics.trim() || `Audio validation helper exited with code ${code}.`));
+    });
+    child.stdin.end(JSON.stringify({ version: 3, action: "inspect_audio", audioPath }));
   });
 }

@@ -1,10 +1,12 @@
 import type { ChatMessage, PromptPreprocessorController } from "@lmstudio/sdk";
 import { configSchematics } from "./config";
 import { TRANSCRIPT_MARKER } from "./constants";
-import { runHelper, type HelperProgress } from "./helper";
+import { inspectAudioDuration, runHelper, type HelperProgress } from "./helper";
 import { ensureModel } from "./modelStore";
+import { dataDirectory } from "./modelStore";
+import path from "node:path";
 import { modelByID, supportsLanguage } from "./modelCatalog";
-import { formatPrompt, isSupportedAudio, validateAudio } from "./prompt";
+import { formatPrompt, formatStructuredTranscript, isSupportedAudio, validateAudio } from "./prompt";
 import {
   latestHistorySettings,
   loadGlobalSettings,
@@ -19,6 +21,7 @@ export interface PreprocessDependencies {
   validateContext: typeof validateContext;
   loadGlobalSettings: typeof loadGlobalSettings;
   saveGlobalSettings: typeof saveGlobalSettings;
+  inspectAudioDuration?: typeof inspectAudioDuration;
 }
 
 async function validateContext(
@@ -45,7 +48,8 @@ const defaultDependencies: PreprocessDependencies = {
   runHelper,
   validateContext,
   loadGlobalSettings,
-  saveGlobalSettings
+  saveGlobalSettings,
+  inspectAudioDuration
 };
 
 function statusText(progress: HelperProgress): string {
@@ -54,6 +58,7 @@ function statusText(progress: HelperProgress): string {
     case "validating": return "Checking audio…";
     case "decoding": return `Preparing audio…${percent}`;
     case "transcribing": return `Transcribing locally…${percent}`;
+    case "diarizing": return `Detecting speakers…${percent}`;
   }
 }
 
@@ -78,7 +83,7 @@ export function createPreprocessor(dependencies: PreprocessDependencies = defaul
     const config = ctl.getPluginConfig(configSchematics);
     const history = await ctl.pullHistory();
     const globalSettings = directive?.kind === "resetGlobal"
-      ? { version: 1 as const }
+      ? { version: 2 as const }
       : await dependencies.loadGlobalSettings();
     const settings = resolveSettings({
       directive,
@@ -104,31 +109,56 @@ export function createPreprocessor(dependencies: PreprocessDependencies = defaul
         "Choose Detect automatically or a compatible speech model."
       );
     }
+    if (selectedModel.engine !== "whisperCpp" &&
+        ((settings.strategy ?? "greedy") !== "greedy" || (settings.beamSize ?? 5) !== 5 || (settings.greedyBestOf ?? 5) !== 5 || settings.initialPrompt !== undefined || settings.timestampGranularity === "word")) {
+      throw new Error(`${selectedModel.displayName.split(" · ")[0]} does not support Whisper advanced decoding or verified word timing. Choose a Whisper model or use segment timestamps with the Balanced preset.`);
+    }
     const helperLanguage = configuredLanguage === "auto" && !selectedModel.automaticLanguageDetection
       ? selectedModel.languages[0]
       : configuredLanguage;
     const status = ctl.createStatus({ status: "loading", text: "Preparing WhisperBridge…" });
 
     try {
+      const audioPath = await audioFile.getFilePath();
+      if (settings.timeRange) {
+        const duration = await dependencies.inspectAudioDuration!(audioPath);
+        if (settings.timeRange.end > duration + 0.001) throw new Error(`The selected end time is beyond this recording's ${duration.toFixed(1)} second duration.`);
+      }
       const modelDirectory = await dependencies.ensureModel(selectedModel, ctl.abortSignal, fraction => {
         status.setState({
           status: "loading",
           text: `Downloading ${selectedModel.displayName.split(" · ")[0]}… ${Math.round(fraction * 100)}%`
         });
       });
-      const audioPath = await audioFile.getFilePath();
       const result = await dependencies.runHelper(
         audioPath,
         selectedModel,
         modelDirectory,
         helperLanguage,
         ctl.abortSignal,
-        progress => status.setState({ status: "loading", text: statusText(progress) })
+        progress => status.setState({ status: "loading", text: statusText(progress) }),
+        undefined,
+        {
+          timeRange: settings.timeRange,
+          timestampGranularity: settings.timestampGranularity ?? "segment",
+          diarization: settings.diarization,
+          diarizationModelDirectory: settings.diarization
+            ? path.join(dataDirectory(), "models", "fluid-audio-diarization", "0.15.5")
+            : undefined,
+          decodingOptions: {
+            strategy: settings.strategy ?? "greedy", beamSize: settings.beamSize ?? 5,
+            greedyBestOf: settings.greedyBestOf ?? 5, patience: settings.patience ?? 1,
+            temperature: settings.temperature ?? 0, temperatureIncrement: settings.temperatureIncrement ?? 0.2,
+            initialPrompt: settings.initialPrompt, noSpeechThreshold: settings.noSpeechThreshold ?? 0.6,
+            logProbabilityThreshold: settings.logProbabilityThreshold ?? -1
+          },
+          library: settings.saveToLibrary ? { enabled: true, dataDirectory: dataDirectory(), title: audioFile.name.replace(/\.[^.]+$/, "") } : { enabled: false }
+        }
       );
 
       const transformed = formatPrompt(
         instruction,
-        result.text,
+        formatStructuredTranscript(result, settings),
         audioFile.name,
         settings
       );

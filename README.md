@@ -23,7 +23,7 @@ The repository now contains an LM Studio prompt-preprocessor plugin, a packaged 
 
 The plugin SDK is currently in private beta. The official local installer has installed and registered WhisperBridge on LM Studio 0.4.19+2, the deployed native helper passes the real-speech smoke fixture, and a headless integration test passes audio through LM Studio's supported file-handle service. Release validation still requires the attachment workflow in the actual composer and a no-terminal Hub installation.
 
-To use the installed plugin, open a Chat and select the **Integrations** panel in the chat's right sidebar (hammer icon), then enable `paladinv/whisperbridge`. It does not appear under **Settings → Integrations → Tool Call Confirmation** because WhisperBridge preprocesses attachments before inference and does not expose model-callable tools.
+To use the installed plugin, open a Chat and select the **Integrations** panel in the chat's right sidebar (hammer icon), then enable `paladinv/whisperbridge`. Audio preprocessing is enabled there rather than under **Settings → Integrations → Tool Call Confirmation**. Transcript Studio also registers the bounded, read-only `search_transcripts` and `get_transcript_excerpt` tools; LM Studio may list those individual tools in its confirmation settings.
 
 LM Studio 0.4.23 and 0.4.24 do not render plugin configuration fields because of [LM Studio bug #2365](https://github.com/lmstudio-ai/lmstudio-bug-tracker/issues/2365). Until the host fix ships, put a command on the first line of an audio prompt:
 
@@ -38,14 +38,20 @@ Whisper Base Multilingual remains the default. The selector also offers every of
 
 For current LM Studio beta builds, disable the bundled RAG integration in audio-transcription chats. RAG treats audio as a document and may run before WhisperBridge, adding substantial delay and irrelevant context. If the app exposes integration ordering, place WhisperBridge before RAG.
 
-### Companion fallback
+### Transcript Studio
 
 - One-click download and SHA-256 verification of Whisper Base Multilingual
 - WAV, MP3, M4A, AAC, and FLAC files up to 500 MiB or two hours
 - Automatic language detection or an explicit language choice
 - Local decoding and transcription through the pinned `whisper.cpp` framework
 - Progress and cancellation for audio preparation and transcription
-- Editable transcript with reset, clear, UTF-8 text export, and **Copy for LM Studio**
+- SQLite/WAL transcript library with FTS5 full-text and speaker search
+- Structured segment and word timing, compact display, conservative reversible filler hiding, and segment editing/deletion
+- Manual speaker creation, assignment, split/merge correction, plus optional local FluidAudio diarization on macOS 15+
+- Full-recording or selected-range transcription; range replacement leaves every segment outside the selection unchanged
+- Fast, Balanced, and Accurate decoder presets with validated Whisper advanced controls
+- TXT, Markdown, JSON, CSV, SRT, VTT, and compatible `.tst` project import/export
+- Audio playback, range selection, searchable snippets, and **Copy for LM Studio**
 - macOS App Sandbox, with access limited to files the user chooses
 
 The model download is the only network operation in the core workflow. Audio and transcript text stay on the Mac. Copying text uses the system clipboard, which can sync if Universal Clipboard is enabled.
@@ -61,8 +67,23 @@ Requirements: macOS 14 or newer, Apple silicon, and Xcode 16 or newer.
 1. Clone the repository and open `WhisperBridge.xcodeproj` in Xcode.
 2. Select the **WhisperBridge** scheme and **My Mac** destination.
 3. Run the app.
-4. Choose **Download Model** on first launch, then select or drop an audio file.
-5. Select **Transcribe**, review the result, and choose **Copy for LM Studio**.
+4. Choose **Download Model** on first launch, then import an audio file.
+5. Select **Transcribe All** or choose a range and select **Transcribe Selection**.
+6. Edit segments and speakers, search the local library, export, or choose **Copy for LM Studio**.
+
+The expanded prompt syntax includes:
+
+```text
+/wb diarize=on timestamps=word compact=on fillers=off library=on preset=accurate
+Summarize this meeting.
+```
+
+```text
+/wb start=01:30 end=03:45 strategy=beam beam-size=5
+Analyze this section.
+```
+
+`start` and `end` must be supplied together. WhisperBridge inspects the recording and rejects an out-of-range selection before any model download or library write. Advanced decoding values are accepted only for `whisper.cpp` models. Library saving remains off unless `library=on` is selected.
 
 The recommended model is about 148 MB. Plugin models are stored under `~/Library/Application Support/LM Studio/WhisperBridge/models/<model-id>/<revision>/`; no model is committed to Git. To reclaim space, quit active transcription and delete only the model-ID directory you no longer want. It will download and verify again if selected later.
 
@@ -74,7 +95,7 @@ The repository includes a repeatable script that keeps Derived Data, Swift modul
 ./scripts/build-and-test.sh
 ```
 
-Eleven XCTest checks cover file policy, invalid input, PCM conversion, model integrity, edit state, cancellation, real `whisper.cpp` transcription, and performance budgets when the local smoke model and fixture are present. A fresh clone skips the large-model smoke and performance checks that require those local assets.
+Twenty XCTest/Swift Testing checks cover file policy, invalid input, PCM conversion, model integrity, edit state, cancellation, SQLite/FTS, archive validation, export formats, real `whisper.cpp` transcription, and performance budgets when the local smoke model and fixture are present. A fresh clone skips the large-model smoke and performance checks that require those local assets.
 
 The separate QA kit covers novice setup and product behavior that code tests cannot prove:
 
@@ -95,7 +116,8 @@ python3 scripts/check_qa.py
 
 ## Project structure
 
-- `Sources/WhisperBridge/` — SwiftUI app, workflow state, audio decoder, model store, and Whisper engine
+- `Sources/WhisperBridgeCore/` — structured transcript model, SQLite/FTS5 library, reversible editing, subtitle/custom export, secure `.tst`, and diarization adapter
+- `Sources/WhisperBridge/` — SwiftUI Transcript Studio, workflow state, audio playback/decoder, model store, and Whisper engine
 - `Sources/WhisperBridgeCLI/` — headless JSON transcription helper used by the plugin
 - `plugin/` — LM Studio TypeScript prompt preprocessor, tests, and packaged native runtime
 - `Tests/WhisperBridgeTests/` — automated unit, decoder, and real-engine smoke tests
