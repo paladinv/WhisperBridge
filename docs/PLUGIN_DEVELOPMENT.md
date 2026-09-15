@@ -37,4 +37,6 @@ Requirements: LM Studio 0.4.19 or newer with plugin beta access, Xcode 16 or new
 
 Use `lms dev --install` for a persistent local installation. The development data override keeps the model and partial downloads under `.build-artifacts/`. End-user installations use `~/Library/Application Support/LM Studio/WhisperBridge`.
 
+Installed prompt preprocessors are enabled per chat from the chat sidebar's **Integrations** panel. They are not listed in **Settings → Integrations → Tool Call Confirmation**, which applies only to tools a model can call.
+
 The first attached audio prompt downloads and verifies Whisper Base Multilingual. Text-only prompts return immediately without reading configuration, touching the filesystem, starting the helper, or checking the model.

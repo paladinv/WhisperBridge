@@ -22,6 +22,8 @@ The repository now contains an LM Studio prompt-preprocessor plugin, a packaged 
 
 The plugin SDK is currently in private beta. The official local installer has installed and registered WhisperBridge on LM Studio 0.4.19+2, the deployed native helper passes the real-speech smoke fixture, and a headless integration test passes audio through LM Studio's supported file-handle service. Release validation still requires the attachment workflow in the actual composer and a no-terminal Hub installation.
 
+To use the installed plugin, open a Chat and select the **Integrations** panel in the chat's right sidebar (hammer icon), then enable `paladinv/whisperbridge`. Its language and filename settings are per-chat. It does not appear under **Settings → Integrations → Tool Call Confirmation** because WhisperBridge preprocesses attachments before inference and does not expose model-callable tools.
+
 ### Companion fallback
 
 - One-click download and SHA-256 verification of Whisper Base Multilingual
