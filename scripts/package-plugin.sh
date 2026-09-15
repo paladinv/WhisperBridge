@@ -5,8 +5,8 @@ SCRIPT_DIR="${0:A:h}"
 PROJECT_ROOT="${SCRIPT_DIR:h}"
 ARTIFACT_ROOT="$PROJECT_ROOT/.build-artifacts/plugin-package"
 RUN_ID="$(date '+%Y%m%d-%H%M%S')"
-DERIVED_DATA="$PROJECT_ROOT/.build-artifacts/plugin-derived-data"
-SOURCE_PACKAGES="$PROJECT_ROOT/.build-artifacts/plugin-source-packages"
+DERIVED_DATA="$PROJECT_ROOT/.build-artifacts/DerivedData"
+SOURCE_PACKAGES="$PROJECT_ROOT/.build-artifacts/SourcePackages"
 MODULE_CACHE="$PROJECT_ROOT/.build-artifacts/plugin-module-cache"
 SDK_CACHE="$PROJECT_ROOT/.build-artifacts/plugin-sdk-cache"
 LOCAL_TMP="$PROJECT_ROOT/.build-artifacts/plugin-tmp"
@@ -29,7 +29,11 @@ xcodebuild \
   -derivedDataPath "$DERIVED_DATA" \
   -clonedSourcePackagesDirPath "$SOURCE_PACKAGES" \
   -resultBundlePath "$RESULT_BUNDLE" \
+  -disableAutomaticPackageResolution \
+  -skipPackagePluginValidation \
   CODE_SIGNING_ALLOWED=NO \
+  ARCHS=arm64 \
+  ONLY_ACTIVE_ARCH=YES \
   COMPILER_INDEX_STORE_ENABLE=NO \
   build > "$PROJECT_ROOT/.build-artifacts/plugin-build.log" 2>&1
 
@@ -40,6 +44,8 @@ xcrun xcresulttool get build-results \
 rm -rf "$PLUGIN_NATIVE/Frameworks/whisper.framework"
 mkdir -p "$PLUGIN_NATIVE/Frameworks/whisper.framework/Versions/A"
 cp "$DERIVED_DATA/Build/Products/Release/WhisperBridgeCLI" "$PLUGIN_NATIVE/WhisperBridgeCLI"
+rm -rf "$PLUGIN_NATIVE/mlx-swift_Cmlx.bundle"
+cp -R "$DERIVED_DATA/Build/Products/Release/mlx-swift_Cmlx.bundle" "$PLUGIN_NATIVE/mlx-swift_Cmlx.bundle"
 cp "$PROJECT_ROOT/Vendor/whisper.framework/Versions/A/whisper" "$PLUGIN_NATIVE/Frameworks/whisper.framework/Versions/A/whisper"
 install_name_tool \
   -change "@rpath/whisper.framework/Versions/Current/whisper" \

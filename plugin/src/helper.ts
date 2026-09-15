@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { access } from "node:fs/promises";
 import path from "node:path";
+import type { ModelDescriptor, OutputStyle } from "./modelCatalog";
 
 export interface HelperProgress {
   stage: "validating" | "decoding" | "transcribing";
@@ -15,11 +16,20 @@ interface HelperEvent {
   detectedLanguage?: string;
   code?: string;
   message?: string;
+  segments?: HelperSegment[];
+}
+
+export interface HelperSegment {
+  start?: number;
+  end?: number;
+  text: string;
+  speaker?: string;
 }
 
 export interface HelperResult {
   text: string;
   detectedLanguage?: string;
+  segments?: HelperSegment[];
 }
 
 export async function resolveHelperPath(environment: NodeJS.ProcessEnv = process.env): Promise<string> {
@@ -43,7 +53,8 @@ export async function resolveHelperPath(environment: NodeJS.ProcessEnv = process
 
 export async function runHelper(
   audioPath: string,
-  modelPath: string,
+  model: ModelDescriptor,
+  modelDirectory: string,
   language: string,
   signal: AbortSignal,
   onProgress: (progress: HelperProgress) => void,
@@ -83,6 +94,7 @@ export async function runHelper(
       }
       if (event.type === "result" && event.text) {
         result = { text: event.text, detectedLanguage: event.detectedLanguage };
+        if (event.segments) result.segments = event.segments;
       }
       if (event.type === "error") {
         helperError = new Error(event.message || "Transcription failed.");
@@ -114,7 +126,18 @@ export async function runHelper(
       if (code === 0) finish();
       else finish(helperError ?? new Error(stderr.trim() || `The transcription helper exited with code ${code}.`));
     });
-    child.stdin.end(JSON.stringify({ version: 1, audioPath, modelPath, language }));
+    const outputStyle: OutputStyle = model.outputStyle;
+    child.stdin.end(JSON.stringify({
+      version: 2,
+      audioPath,
+      modelID: model.id,
+      engine: model.engine,
+      repository: model.repository,
+      modelDirectory,
+      entryFile: model.entryFile,
+      language,
+      outputStyle
+    }));
     if (signal.aborted) abort();
   });
 }

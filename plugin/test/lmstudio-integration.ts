@@ -36,7 +36,11 @@ async function main(): Promise<void> {
       client,
       abortSignal: abortController.signal,
       getPluginConfig: () => ({
-        get: (key: string) => key === "language" ? "en" : true
+        get: (key: string) => {
+          if (key === "model") return "whisper-base-multilingual";
+          if (key === "language") return "en";
+          return true;
+        }
       }),
       createStatus: (state: { status: string; text: string }) => {
         statusStates.push(state);

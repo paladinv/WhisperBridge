@@ -12,4 +12,15 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-The Whisper model weights are downloaded separately at the user's request from the official whisper.cpp model repository. Their upstream source is OpenAI Whisper, distributed under the MIT License. WhisperBridge verifies the pinned multilingual base model with SHA-256 `60ed5bc3dd14eea856493d334349b405782ddcaf0028d4b5df4088345fba2efe` before use.
+The Whisper model weights are downloaded separately at the user's request from the official whisper.cpp model repository. Their upstream source is OpenAI Whisper, distributed under the MIT License. WhisperBridge pins revision `5359861c739e955e79d9a303bcbc70fb988958b1` and verifies each selected checkpoint against the file hash in `plugin/src/modelCatalog.ts`.
+
+The native helper links `mlx-audio-swift` 0.1.3 at commit `d302a5c6080d2bb97bae38c7418f82abb76013b6`, distributed under the MIT License, plus the exact transitive Swift packages recorded in `WhisperBridge.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`.
+
+The following model files download only after the user selects a profile and sends audio:
+
+- Moonshine Tiny by Moonshine AI, MIT License.
+- NVIDIA Parakeet TDT 0.6B v3, CC BY 4.0, using the pinned MLX 8-bit community conversion credited in the catalog.
+- Cohere Labs Transcribe, Apache 2.0, using the user-approved pinned MLX 4-bit community conversion by beshkenadze.
+- IBM Granite 4.0 Speech, Apache 2.0, using the pinned MLX 5-bit community conversion.
+
+The repository records inactive MOSS and Canary-Qwen descriptors for adapter development. Those models are not offered for download because their native checkpoints have not passed release gates. See `docs/MODELS.md` for revisions and the current gate reasons.

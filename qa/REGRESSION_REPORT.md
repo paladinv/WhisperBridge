@@ -81,3 +81,31 @@ The official installer succeeded from an LM Studio-readable staging directory. T
 ## Auto-language correction addendum
 
 The first real composer attachment reached WhisperBridge but exposed a `whisper.cpp` parameter error: Auto mode enabled detection-only behavior, so Whisper identified Chinese and returned before decoding transcript segments. `WhisperEngine` now passes the `auto` language value with detection-only mode disabled. The fixed installed helper transcribes that same private recording successfully; private transcript content remains in ignored evidence only. QA-054 is FAIL until the corrected hook succeeds on a composer retry. See `qa/evidence/auto-language-fix-20260914.md` for command durations, build reuse, focused selectors, final accounting, and the separate RAG ordering observation.
+
+## Multi-model implementation addendum
+
+Date: 2026-09-15. The change adds the per-chat selector, 23 official Whisper choices, four enabled MLX-engine profiles, atomic multi-file storage, protocol v2 adapters, pinned Swift dependencies, language gating, cache confinement, model smoke tooling, and ten new manual QA cases. MOSS and Canary-Qwen are implemented behind unavailable catalog gates; the reviewed MOSS 5-bit checkpoint fails MLX Audio Swift 0.1.3's VQ-adaptor layout check, and Canary-Qwen has no verified native Swift checkpoint.
+
+The TypeScript group selected 23 unique unit/contract/performance selectors. All 23 passed in 0.943 seconds on the final run. Its 10,000-call text-only preprocessor measurement was 10.15 ms, below the 15 ms gate, and launched no helper. This preserves the pre-configuration early return and found no measurable ordinary text-path regression within the established budget.
+
+The source/project fingerprint changed, so the macOS suite required one `build-for-testing`; the sandbox-blocked attempt produced no receipt, and the permitted retry succeeded. The Xcode receipt reports 6.941 seconds, zero errors, and zero warnings; total command wall time including SwiftPM/test-service startup was about 31.5 seconds. All later native runs reused `.build-artifacts/test-cache/DerivedData` with that receipt.
+
+| Run | Selected selectors | Command wall time | Result |
+| --- | ---: | ---: | --- |
+| Domain and audio focused groups | 8 | about 8.8 s on permitted retry | 8 passed |
+| Real Whisper Base smoke | 1 | about 8.9 s | passed; selector 0.25 s |
+| Performance group, serial | 2 | about 7.0 s | passed; selectors 0.068 s and 0.20 s |
+| Final complete native milestone | 11 | about 8.5 s | 11 passed |
+| LM Studio file-handle integration | 1 | 0.79 s | passed with exact transcript, attachment consumption, and final status |
+
+Final native accounting is 11 expected unique selectors, 11 passed, 0 failed, 0 missing, 0 unexpected, and 0 unrun. Focused runs repeat those selectors as pre-milestone evidence and do not add coverage. No failed selector was retried. The first focused command was blocked before execution by sandboxed Apple test services; its permitted retry is infrastructure history.
+
+Real packaged-helper checks passed for protocol v1 Whisper Base and protocol v2 Moonshine with the exact sentence “Whisper Bridge turns audio into text for local models.” The Moonshine silence check returned the expected no-speech message. Its first evidence assertion expected the internal spelling `no_speech`; the helper correctly returned the existing `noSpeech` code, and the corrected assertion passed. This is evidence-script retry history rather than duplicate coverage.
+
+Local checkpoint smoke evidence also records English WER 0 for Moonshine, Parakeet, Cohere, and Granite on the short fixture. On the synthetic 31-second repeated-sentence performance fixture, Moonshine ran in 2.47 s at WER 0, Parakeet in 0.71 s at WER 0, Cohere in 1.21 s at WER 3.75%, and Granite in 1.10 s faster than real time. Granite collapsed the repeated phrase, so that run is performance evidence only. These engineering fixtures do not satisfy the pending licensed multilingual, speaker-diarization, every-checkpoint, peak-RSS, or actual-composer QA gates.
+
+The official LM Studio installer updated `paladinv/whisperbridge` from LM Studio's readable working directory without System Events. The installed helper SHA-256 matches the packaged helper, its MLX Metal resource is present, and the generated production bundle contains the new selector/catalog. Manual selector visibility, per-chat persistence, actual composer use for every engine, RAG ordering, accessibility, update, and novice installation remain NOT_RUN in the 73-case QA ledger.
+
+Before cleanup, reusable Derived Data was 312,056 KiB and the release-helper Derived Data was 2,139,272 KiB, both below 10 GiB. Large downloaded checkpoint fixtures and failed/intermediate result artifacts are removed only after the final verification step; retained final evidence remains repository-local.
+
+The final audit then added the missing `mlx-audio-swift` declaration to `project.yml` and regenerated the checked-in Xcode project. Because that changed the recorded project fingerprint, a new `build-for-testing` receipt was required. It succeeded in about 6.8 seconds of command wall time; the extracted action duration was 1.63 seconds with zero errors and warnings. The post-generation `test-without-building` milestone reused that receipt and passed the same 11 expected selectors: 11 passed, 0 failed, 0 missing, 0 unexpected, and 0 unrun. This supersedes the prior final native milestone as the completion result.

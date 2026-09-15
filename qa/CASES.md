@@ -865,3 +865,142 @@ P1 · future · UC-11 · R08
 **Pass condition:** Invalid model rejected; valid file activates without network; otherwise feature remains unadvertised
 
 **Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## QA-064 — Speech model selector and per-chat persistence
+
+P0 · native · UC-20 · R12
+
+**Preconditions:** Installed multi-model plugin; two LM Studio chats
+
+1. Open WhisperBridge settings in chat A.
+2. select a non-default model and language.
+3. open chat B and keep defaults.
+4. restart LM Studio and reopen both chats.
+
+**Pass condition:** Selector shows friendly purpose, model, size, memory, and license details; each chat retains its own model and language after restart
+
+**Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## QA-065 — Selected model first-use download
+
+P0 · native · UC-03 · R03
+
+**Preconditions:** Selected model absent; adequate disk; network connected
+
+1. Select a model without sending.
+2. confirm no files or network activity.
+3. attach audio and Send.
+4. observe download progress and completion.
+
+**Pass condition:** Selection is passive; Send checks disk, shows named percentage progress, verifies every file, and activates only the complete revision
+
+**Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## QA-066 — Multi-file download cancellation and retry
+
+P0 · native · UC-03 · R03
+
+**Preconditions:** Large multi-file MLX model absent; network connected
+
+1. Start first-use audio Send.
+2. cancel during a later file.
+3. inspect model store.
+4. retry Send.
+
+**Pass condition:** No partial revision or prompt activates; staging data is cleaned; retry verifies one complete snapshot and transcribes once
+
+**Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## QA-067 — Offline cached model reuse
+
+P0 · native · UC-11 · R08
+
+**Preconditions:** At least one Whisper and one MLX model verified locally; network disconnected
+
+1. Restart LM Studio offline.
+2. send one audio prompt with each cached model.
+
+**Pass condition:** Both complete without a download attempt or global cache access and produce one transcript each
+
+**Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## QA-068 — Model switching across concurrent chats
+
+P0 · native · UC-20 · R12
+
+**Preconditions:** Two chats; two verified models; distinct audio fixtures
+
+1. Select different models in each chat.
+2. send both audio prompts concurrently.
+3. inspect status, transcript, and process cleanup.
+
+**Pass condition:** Each chat uses its selected model; no duplicate download or cross-chat status/text; each helper exits and releases model memory
+
+**Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## QA-069 — Unsupported model language blocks early
+
+P0 · native · UC-05 · R04
+
+**Preconditions:** English-only Moonshine selected; French selected; Moonshine absent locally
+
+1. Attach French audio and Send.
+
+**Pass condition:** A compatibility error recommends Auto or a compatible profile before filesystem, network, model-store, or helper activity
+
+**Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## QA-070 — Enabled model quality matrix
+
+P0 · native · UC-04 · R04
+
+**Preconditions:** Every selectable checkpoint downloaded and hashed; licensed English and family-specific multilingual references
+
+1. Run the 30-second English fixture on every selectable checkpoint.
+2. run one non-English fixture per multilingual family.
+3. score normalized raw output.
+
+**Pass condition:** English WER <=20%; multilingual-family WER <=25%; exact revision, hash, transcript, and score recorded for every selector option
+
+**Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## QA-071 — Enabled model performance and release
+
+P1 · native · UC-17 · R10
+
+**Preconditions:** M4 Max reference host; every selectable checkpoint cached; 30-second fixture
+
+1. Measure cold start, warm runtime, peak RSS, installed size, and helper exit for each model serially.
+
+**Pass condition:** Every model is faster than real time on the reference host; helper exits after each prompt; recorded memory fits the selector recommendation
+
+**Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## QA-072 — Native context overflow with selected model
+
+P0 · native · UC-20 · R12
+
+**Preconditions:** Cached speech model; long fixture; small-context LM Studio text model; unrelated attachment
+
+1. Send typed instruction, long audio, and unrelated attachment.
+2. observe overflow.
+3. switch to a larger-context text model and retry.
+
+**Pass condition:** Overflow sends no prompt, consumes no attachment, and preserves instruction; retry inserts one transcript and retains the unrelated attachment
+
+**Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## QA-073 — Multi-model plugin update and storage retention
+
+P0 · native · UC-16 · R11
+
+**Preconditions:** Prior plugin installed with verified Whisper and MLX models; current candidate available
+
+1. Update plugin.
+2. restart LM Studio.
+3. transcribe with both retained models.
+4. remove one model through documented storage management.
+
+**Pass condition:** Update reuses valid revisions offline; removed model alone is reclaimed and downloads again on later use; other models and chats remain intact
+
+**Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.

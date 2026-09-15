@@ -4,7 +4,7 @@ Reviewed 2026-09-14 against LM Studio 0.4.19+2 and the current official TypeScri
 
 ## Implementation status
 
-The repository now implements the TypeScript prompt preprocessor, configuration, pinned model download and verification, versioned helper protocol, Apple silicon helper target, packaged `whisper.cpp` runtime, prompt transformation, failure-safe attachment consumption, progress, cancellation, focused automated tests, and development packaging workflow.
+The repository now implements the TypeScript prompt preprocessor, per-chat model/language configuration, pinned multi-file model download and verification, versioned helper protocol, Apple silicon helper target, packaged `whisper.cpp` and MLX Audio Swift runtimes, prompt transformation, failure-safe attachment consumption, progress, cancellation, focused automated tests, and development packaging workflow. The selector offers 23 official Whisper variants plus verified Moonshine, Parakeet, Cohere, and Granite checkpoints. MOSS and Canary-Qwen adapters remain gated for the reasons recorded in [the model catalog](MODELS.md).
 
 SDK 1.4.0 confirms that an attached `FileHandle` exposes `getFilePath()`. The official `lms dev --install` flow has installed `paladinv/whisperbridge`, and LM Studio's server log confirms that the installed process connected and registered its prompt preprocessor. A headless SDK integration uploaded real audio through `client.files.prepareFile()`, resolved the LM Studio-managed path through `getFilePath()`, transcribed it, replaced the message, and consumed the handle. The native helper from the installed directory separately completed the same fixture with the expected transcript. Gates A, C, and D remain incomplete until the registered hook is exercised through the actual LM Studio composer and distributed through a no-terminal Hub flow. Gate B's functional and short-fixture timing portions pass on the recorded M4 Max environment; long-file memory and cancellation measurements remain pending.
 
@@ -36,7 +36,7 @@ Do not modify LM Studio's Electron archive or inject controls into its signed ap
 
 6. The selected model receives that text, and the transformed message remains visible in LM Studio history.
 
-Plugin settings should expose only useful choices: model preset, automatic or explicit language, and whether to include the source filename. Model download, validation, and storage should be managed by the plugin.
+Plugin settings expose only useful choices: speech model, automatic or explicit language, and whether to include the source filename. Model selection is per chat and passive; model download, validation, and storage are managed by the plugin on the next audio Send.
 
 ## Confirmed capabilities and limits
 

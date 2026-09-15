@@ -4,7 +4,7 @@
 
 ![WhisperBridge logo](assets/logo.svg)
 
-WhisperBridge is moving toward an in-app [LM Studio](https://lmstudio.ai/) plugin. The intended workflow is to attach a recording to an LM Studio prompt, transcribe it locally with Whisper when Send is selected, and pass the resulting text to the chosen model. The everyday workflow should need no Python, API key, database, local server, or separately launched app.
+WhisperBridge is an in-app [LM Studio](https://lmstudio.ai/) prompt-preprocessor plugin. Attach a recording to a prompt, choose a speech model in that chat's integration settings, and select Send. WhisperBridge downloads that model on first use, transcribes locally, and passes the text to the chosen language model. The everyday workflow needs no Python, API key, database, local server, or separately launched app.
 
 The repository now contains an LM Studio prompt-preprocessor plugin, a packaged Apple silicon transcription helper, and the original native macOS companion. The plugin uses LM Studio's supported attachment path API, transcribes locally, consumes only the successfully processed audio attachment, and inserts the transcript into the outgoing message. See the [implementation and remaining release gates](docs/LM_STUDIO_PLUGIN_PLAN.md). WhisperBridge remains an independent project and does not patch LM Studio.
 
@@ -14,7 +14,8 @@ The repository now contains an LM Studio prompt-preprocessor plugin, a packaged 
 
 - Constant-time bypass for text-only prompts, without model or helper startup
 - WAV, MP3, M4A, AAC, and FLAC attachment detection
-- Local model download with pinned size and SHA-256 verification
+- A per-chat speech-model selector with 23 Whisper sizes/quantizations plus Moonshine, Parakeet, Cohere, and Granite
+- First-use, multi-file model download with pinned revisions, exact sizes, SHA-256 verification, atomic activation, and safe concurrent reuse
 - LM Studio status updates and cancellation propagation
 - Packaged Apple silicon Swift/AVFoundation/`whisper.cpp` helper
 - Preservation of typed instructions and unrelated attachments
@@ -22,7 +23,9 @@ The repository now contains an LM Studio prompt-preprocessor plugin, a packaged 
 
 The plugin SDK is currently in private beta. The official local installer has installed and registered WhisperBridge on LM Studio 0.4.19+2, the deployed native helper passes the real-speech smoke fixture, and a headless integration test passes audio through LM Studio's supported file-handle service. Release validation still requires the attachment workflow in the actual composer and a no-terminal Hub installation.
 
-To use the installed plugin, open a Chat and select the **Integrations** panel in the chat's right sidebar (hammer icon), then enable `paladinv/whisperbridge`. Its language and filename settings are per-chat. It does not appear under **Settings → Integrations → Tool Call Confirmation** because WhisperBridge preprocesses attachments before inference and does not expose model-callable tools.
+To use the installed plugin, open a Chat and select the **Integrations** panel in the chat's right sidebar (hammer icon), then enable `paladinv/whisperbridge`. Its speech model, language, and filename settings are per-chat. Model selection does not use the network; the selected model downloads only when the next audio prompt is sent. It does not appear under **Settings → Integrations → Tool Call Confirmation** because WhisperBridge preprocesses attachments before inference and does not expose model-callable tools.
+
+Whisper Base Multilingual remains the default. The selector also offers every official `whisper.cpp` checkpoint larger than Base: Small and Medium English/multilingual Q5, Q8, and full variants, Large v1, Large v2/v3 Q5, Q8 where published, full variants, and Large v3 Turbo Q5/Q8/full. See the [model catalog](docs/MODELS.md) for languages, storage, licenses, pinned revisions, and the two gated adapters.
 
 For current LM Studio beta builds, disable the bundled RAG integration in audio-transcription chats. RAG treats audio as a document and may run before WhisperBridge, adding substantial delay and irrelevant context. If the app exposes integration ordering, place WhisperBridge before RAG.
 
@@ -52,7 +55,7 @@ Requirements: macOS 14 or newer, Apple silicon, and Xcode 16 or newer.
 4. Choose **Download Model** on first launch, then select or drop an audio file.
 5. Select **Transcribe**, review the result, and choose **Copy for LM Studio**.
 
-The recommended model is about 148 MB and is stored in the app's Application Support container. No model is committed to Git.
+The recommended model is about 148 MB. Plugin models are stored under `~/Library/Application Support/LM Studio/WhisperBridge/models/<model-id>/<revision>/`; no model is committed to Git. To reclaim space, quit active transcription and delete only the model-ID directory you no longer want. It will download and verify again if selected later.
 
 ## Build and test
 
@@ -70,7 +73,7 @@ The separate QA kit covers novice setup and product behavior that code tests can
 - [Hands-on QA strategy and release gates](qa/PLAN.md)
 - [Step-by-step QA cases](qa/CASES.md)
 - [Machine-readable cases](qa/cases.json) and [execution records](qa/results.json)
-- [Implementation regression report](qa/REGRESSION_REPORT.md)
+- [Implementation regression report](QA/REGRESSION_REPORT.md)
 - [LM Studio plugin feasibility and implementation plan](docs/LM_STUDIO_PLUGIN_PLAN.md)
 
 Validate the QA records with:

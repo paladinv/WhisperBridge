@@ -2,7 +2,7 @@
 
 ## Status and execution
 
-This is an acceptance suite for a future app. No installer, speech runtime, model or recorded-speech fixtures exist in this initial repository. All 63 product cases start NOT_RUN. A blocked environment is not a passing test. Generated silence/noise fixtures can test rejection, but cannot establish recognition accuracy. Do not substitute mock transcript output for speech recognition evidence.
+This acceptance suite covers the native companion and the installed LM Studio prompt-preprocessor plugin. All 73 product cases are tracked explicitly; automated evidence never changes a manual case unless its complete pass condition was exercised. A blocked environment is not a passing test. Generated silence/noise fixtures can test rejection, but cannot establish recognition accuracy. Do not substitute mock transcript output for speech recognition evidence.
 
 Use `cases.json` as the test definition and `results.json` as the execution ledger. Each result needs status (NOT_RUN, BLOCKED, PASS, FAIL), actual observation, tester, environment and evidence paths. Record app commit/build, OS build, hardware/RAM, LM Studio version/model/context size, Whisper version/hash, language setting, fixture SHA-256 and network state in the environment record. Evidence files must live within the workspace. Keep private recordings and sensitive evidence in the ignored private directories; commit sanitized summaries suitable for future reviewers.
 

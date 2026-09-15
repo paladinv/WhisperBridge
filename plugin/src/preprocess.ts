@@ -3,6 +3,7 @@ import { configSchematics } from "./config";
 import { TRANSCRIPT_MARKER } from "./constants";
 import { runHelper, type HelperProgress } from "./helper";
 import { ensureModel } from "./modelStore";
+import { DEFAULT_MODEL_ID, modelByID, supportsLanguage } from "./modelCatalog";
 import { formatPrompt, isSupportedAudio, validateAudio } from "./prompt";
 
 export interface PreprocessDependencies {
@@ -54,20 +55,35 @@ export function createPreprocessor(dependencies: PreprocessDependencies = defaul
     const audioFile = audioFiles[0];
     validateAudio(audioFile);
     const config = ctl.getPluginConfig(configSchematics);
+    const selectedModel = modelByID(config.get("model") || DEFAULT_MODEL_ID);
+    if (!selectedModel || !selectedModel.available) {
+      throw new Error(selectedModel?.unavailableReason ?? "The selected speech model is unavailable.");
+    }
+    const configuredLanguage = config.get("language");
+    if (!supportsLanguage(selectedModel, configuredLanguage)) {
+      throw new Error(
+        `${selectedModel.displayName.split(" · ")[0]} does not support the selected language. ` +
+        "Choose Detect automatically or a compatible speech model."
+      );
+    }
+    const helperLanguage = configuredLanguage === "auto" && !selectedModel.automaticLanguageDetection
+      ? selectedModel.languages[0]
+      : configuredLanguage;
     const status = ctl.createStatus({ status: "loading", text: "Preparing WhisperBridge…" });
 
     try {
-      const modelPath = await dependencies.ensureModel(ctl.abortSignal, fraction => {
+      const modelDirectory = await dependencies.ensureModel(selectedModel, ctl.abortSignal, fraction => {
         status.setState({
           status: "loading",
-          text: `Downloading ${Math.round(fraction * 100)}% of the speech model…`
+          text: `Downloading ${selectedModel.displayName.split(" · ")[0]}… ${Math.round(fraction * 100)}%`
         });
       });
       const audioPath = await audioFile.getFilePath();
       const result = await dependencies.runHelper(
         audioPath,
-        modelPath,
-        config.get("language"),
+        selectedModel,
+        modelDirectory,
+        helperLanguage,
         ctl.abortSignal,
         progress => status.setState({ status: "loading", text: statusText(progress) })
       );

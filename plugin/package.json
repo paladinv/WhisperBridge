@@ -9,6 +9,7 @@
     "dev": "lms dev",
     "install:local": "lms dev --install",
     "test": "node --import tsx --test test/*.test.ts",
+    "test:model-smoke": "node --import tsx test/model-smoke.ts",
     "test:integration:lmstudio": "node --import tsx test/lmstudio-integration.ts"
   },
   "license": "MIT",

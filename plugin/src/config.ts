@@ -1,24 +1,24 @@
 import { createConfigSchematics } from "@lmstudio/sdk";
+import { AVAILABLE_MODELS, DEFAULT_MODEL_ID, LANGUAGE_OPTIONS } from "./modelCatalog";
 
 export const configSchematics = createConfigSchematics()
+  .field(
+    "model",
+    "select",
+    {
+      displayName: "Speech model",
+      subtitle: "The selected model downloads on the first audio message, then stays on this Mac.",
+      options: AVAILABLE_MODELS.map(model => ({ value: model.id, displayName: model.displayName }))
+    },
+    DEFAULT_MODEL_ID
+  )
   .field(
     "language",
     "select",
     {
-      displayName: "Transcription language",
+      displayName: "Spoken language",
       subtitle: "Automatic detection works for most recordings.",
-      options: [
-        { value: "auto", displayName: "Detect automatically" },
-        { value: "en", displayName: "English" },
-        { value: "fr", displayName: "French" },
-        { value: "es", displayName: "Spanish" },
-        { value: "de", displayName: "German" },
-        { value: "it", displayName: "Italian" },
-        { value: "pt", displayName: "Portuguese" },
-        { value: "ja", displayName: "Japanese" },
-        { value: "zh", displayName: "Chinese" },
-        { value: "ko", displayName: "Korean" }
-      ]
+      options: LANGUAGE_OPTIONS
     },
     "auto"
   )

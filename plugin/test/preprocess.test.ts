@@ -4,6 +4,7 @@ import type { ChatMessage, FileHandle, PromptPreprocessorController } from "@lms
 import { performance } from "node:perf_hooks";
 import { TRANSCRIPT_MARKER } from "../src/constants";
 import { createPreprocessor, type PreprocessDependencies } from "../src/preprocess";
+import { DEFAULT_MODEL_ID } from "../src/modelCatalog";
 
 interface MockFile {
   identifier: string;
@@ -21,7 +22,11 @@ function file(name: string, identifier = name): MockFile {
   };
 }
 
-function harness(text: string, files: MockFile[]) {
+function harness(
+  text: string,
+  files: MockFile[],
+  settings: { model?: string; language?: string; includeFilename?: boolean } = {}
+) {
   let replacement: string | undefined;
   let consumed: string[] = [];
   let configReads = 0;
@@ -42,7 +47,13 @@ function harness(text: string, files: MockFile[]) {
     abortSignal: abortController.signal,
     getPluginConfig: () => {
       configReads += 1;
-      return { get: (key: string) => key === "language" ? "auto" : true };
+      return {
+        get: (key: string) => {
+          if (key === "language") return settings.language ?? "auto";
+          if (key === "model") return settings.model ?? DEFAULT_MODEL_ID;
+          return settings.includeFilename ?? true;
+        }
+      };
     },
     createStatus: () => ({ setState: (state: unknown) => states.push(state) })
   } as unknown as PromptPreprocessorController;
@@ -59,7 +70,7 @@ function harness(text: string, files: MockFile[]) {
 
 function dependencies(overrides: Partial<PreprocessDependencies> = {}): PreprocessDependencies {
   return {
-    ensureModel: async () => "/models/ggml-base.bin",
+    ensureModel: async () => "/models/whisper-base/revision",
     runHelper: async () => ({ text: "Recognized speech", detectedLanguage: "English" }),
     validateContext: async () => {},
     ...overrides
@@ -87,7 +98,7 @@ test("text-only bypass adds negligible local processing", async () => {
     await preprocess(context.controller, context.message);
   }
   const duration = performance.now() - start;
-  assert.ok(duration < 250, `10,000 bypass calls took ${duration.toFixed(1)} ms`);
+  assert.ok(duration < 15, `10,000 bypass calls took ${duration.toFixed(1)} ms`);
 });
 
 test("an already transformed message is idempotent", async () => {
@@ -142,5 +153,22 @@ test("multiple audio files fail before model or runtime work", async () => {
   }));
   await assert.rejects(preprocess(context.controller, context.message), /one audio file/);
   assert.equal(modelCalls, 0);
+  assert.deepEqual(context.consumed(), []);
+});
+
+test("unsupported language fails before model or helper activity", async () => {
+  const context = harness("Transcribe", [file("meeting.wav")], {
+    model: "moonshine-tiny-english",
+    language: "fr"
+  });
+  let modelCalls = 0;
+  let helperCalls = 0;
+  const preprocess = createPreprocessor(dependencies({
+    ensureModel: async () => { modelCalls += 1; return "/model"; },
+    runHelper: async () => { helperCalls += 1; return { text: "unexpected" }; }
+  }));
+  await assert.rejects(preprocess(context.controller, context.message), /does not support/);
+  assert.equal(modelCalls, 0);
+  assert.equal(helperCalls, 0);
   assert.deepEqual(context.consumed(), []);
 });
