@@ -4,7 +4,7 @@
 
 ![WhisperBridge logo](assets/logo.svg)
 
-WhisperBridge is an in-app [LM Studio](https://lmstudio.ai/) prompt-preprocessor plugin. Attach a recording to a prompt, choose a speech model in that chat's integration settings, and select Send. WhisperBridge downloads that model on first use, transcribes locally, and passes the text to the chosen language model. The everyday workflow needs no Python, API key, database, local server, or separately launched app.
+WhisperBridge is an in-app [LM Studio](https://lmstudio.ai/) prompt-preprocessor plugin. Attach a recording to a prompt and select Send. WhisperBridge downloads the chosen speech model on first use, transcribes locally, and passes the text to the chosen language model. The everyday workflow needs no Python, API key, database, local server, or separately launched app.
 
 The repository now contains an LM Studio prompt-preprocessor plugin, a packaged Apple silicon transcription helper, and the original native macOS companion. The plugin uses LM Studio's supported attachment path API, transcribes locally, consumes only the successfully processed audio attachment, and inserts the transcript into the outgoing message. See the [implementation and remaining release gates](docs/LM_STUDIO_PLUGIN_PLAN.md). WhisperBridge remains an independent project and does not patch LM Studio.
 
@@ -14,7 +14,7 @@ The repository now contains an LM Studio prompt-preprocessor plugin, a packaged 
 
 - Constant-time bypass for text-only prompts, without model or helper startup
 - WAV, MP3, M4A, AAC, and FLAC attachment detection
-- A per-chat speech-model selector with 23 Whisper sizes/quantizations plus Moonshine, Parakeet, Cohere, and Granite
+- Prompt-based per-chat and application-wide model selection with 23 Whisper sizes/quantizations plus Moonshine, Parakeet, Cohere, and Granite
 - First-use, multi-file model download with pinned revisions, exact sizes, SHA-256 verification, atomic activation, and safe concurrent reuse
 - LM Studio status updates and cancellation propagation
 - Packaged Apple silicon Swift/AVFoundation/`whisper.cpp` helper
@@ -23,7 +23,16 @@ The repository now contains an LM Studio prompt-preprocessor plugin, a packaged 
 
 The plugin SDK is currently in private beta. The official local installer has installed and registered WhisperBridge on LM Studio 0.4.19+2, the deployed native helper passes the real-speech smoke fixture, and a headless integration test passes audio through LM Studio's supported file-handle service. Release validation still requires the attachment workflow in the actual composer and a no-terminal Hub installation.
 
-To use the installed plugin, open a Chat and select the **Integrations** panel in the chat's right sidebar (hammer icon), then enable `paladinv/whisperbridge`. Its speech model, language, and filename settings are per-chat. Model selection does not use the network; the selected model downloads only when the next audio prompt is sent. It does not appear under **Settings → Integrations → Tool Call Confirmation** because WhisperBridge preprocesses attachments before inference and does not expose model-callable tools.
+To use the installed plugin, open a Chat and select the **Integrations** panel in the chat's right sidebar (hammer icon), then enable `paladinv/whisperbridge`. It does not appear under **Settings → Integrations → Tool Call Confirmation** because WhisperBridge preprocesses attachments before inference and does not expose model-callable tools.
+
+LM Studio 0.4.23 and 0.4.24 do not render plugin configuration fields because of [LM Studio bug #2365](https://github.com/lmstudio-ai/lmstudio-bug-tracker/issues/2365). Until the host fix ships, put a command on the first line of an audio prompt:
+
+```text
+/wb model=better language=auto filename=on
+Summarize this recording.
+```
+
+The command is removed before the prompt reaches the language model. Its resolved settings are shown with the transcript and inherited by later audio messages in that chat. Use `/wb default model=best` to save an application-wide default, `/wb reset` to return a chat to inherited defaults, or `/wb default reset` to clear the saved global defaults. Commands require one attached audio file; text-only prompts remain untouched. Model selection does not use the network, and the selected model downloads only when that audio prompt is sent.
 
 Whisper Base Multilingual remains the default. The selector also offers every official `whisper.cpp` checkpoint larger than Base: Small and Medium English/multilingual Q5, Q8, and full variants, Large v1, Large v2/v3 Q5, Q8 where published, full variants, and Large v3 Turbo Q5/Q8/full. See the [model catalog](docs/MODELS.md) for languages, storage, licenses, pinned revisions, and the two gated adapters.
 

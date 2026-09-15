@@ -3,18 +3,31 @@ import { configSchematics } from "./config";
 import { TRANSCRIPT_MARKER } from "./constants";
 import { runHelper, type HelperProgress } from "./helper";
 import { ensureModel } from "./modelStore";
-import { DEFAULT_MODEL_ID, modelByID, supportsLanguage } from "./modelCatalog";
+import { modelByID, supportsLanguage } from "./modelCatalog";
 import { formatPrompt, isSupportedAudio, validateAudio } from "./prompt";
+import {
+  latestHistorySettings,
+  loadGlobalSettings,
+  parseDirective,
+  resolveSettings,
+  saveGlobalSettings
+} from "./settings";
 
 export interface PreprocessDependencies {
   ensureModel: typeof ensureModel;
   runHelper: typeof runHelper;
   validateContext: typeof validateContext;
+  loadGlobalSettings: typeof loadGlobalSettings;
+  saveGlobalSettings: typeof saveGlobalSettings;
 }
 
-async function validateContext(ctl: PromptPreprocessorController, prompt: string): Promise<void> {
+async function validateContext(
+  ctl: PromptPreprocessorController,
+  prompt: string,
+  existingHistory?: Awaited<ReturnType<PromptPreprocessorController["pullHistory"]>>
+): Promise<void> {
   const model = await ctl.client.llm.model();
-  const history = await ctl.pullHistory();
+  const history = existingHistory ?? await ctl.pullHistory();
   history.append("user", prompt);
   const formatted = await model.applyPromptTemplate(history);
   const tokenCount = await model.countTokens(formatted);
@@ -27,7 +40,13 @@ async function validateContext(ctl: PromptPreprocessorController, prompt: string
   }
 }
 
-const defaultDependencies: PreprocessDependencies = { ensureModel, runHelper, validateContext };
+const defaultDependencies: PreprocessDependencies = {
+  ensureModel,
+  runHelper,
+  validateContext,
+  loadGlobalSettings,
+  saveGlobalSettings
+};
 
 function statusText(progress: HelperProgress): string {
   const percent = progress.fraction === undefined ? "" : ` (${Math.round(progress.fraction * 100)}%)`;
@@ -54,12 +73,31 @@ export function createPreprocessor(dependencies: PreprocessDependencies = defaul
 
     const audioFile = audioFiles[0];
     validateAudio(audioFile);
+    const directive = parseDirective(originalText);
+    const instruction = directive?.instruction ?? originalText;
     const config = ctl.getPluginConfig(configSchematics);
-    const selectedModel = modelByID(config.get("model") || DEFAULT_MODEL_ID);
+    const history = await ctl.pullHistory();
+    const globalSettings = directive?.kind === "resetGlobal"
+      ? { version: 1 as const }
+      : await dependencies.loadGlobalSettings();
+    const settings = resolveSettings({
+      directive,
+      history: latestHistorySettings(history
+        .getMessagesArray()
+        .filter(message => message.getRole() === "user")
+        .map(message => message.getText())),
+      ui: {
+        model: config.get("model"),
+        language: config.get("language"),
+        filename: config.get("filename")
+      },
+      global: globalSettings
+    });
+    const selectedModel = modelByID(settings.modelID);
     if (!selectedModel || !selectedModel.available) {
       throw new Error(selectedModel?.unavailableReason ?? "The selected speech model is unavailable.");
     }
-    const configuredLanguage = config.get("language");
+    const configuredLanguage = settings.language;
     if (!supportsLanguage(selectedModel, configuredLanguage)) {
       throw new Error(
         `${selectedModel.displayName.split(" · ")[0]} does not support the selected language. ` +
@@ -89,12 +127,14 @@ export function createPreprocessor(dependencies: PreprocessDependencies = defaul
       );
 
       const transformed = formatPrompt(
-        originalText,
+        instruction,
         result.text,
         audioFile.name,
-        config.get("includeFilename")
+        settings
       );
-      await dependencies.validateContext(ctl, transformed);
+      await dependencies.validateContext(ctl, transformed, history);
+      if (directive?.kind === "global") await dependencies.saveGlobalSettings(directive.update);
+      if (directive?.kind === "resetGlobal") await dependencies.saveGlobalSettings(null);
       userMessage.consumeFiles(ctl.client, file => file.identifier === audioFile.identifier);
       userMessage.replaceText(transformed);
       status.setState({ status: "done", text: "Audio transcribed locally" });

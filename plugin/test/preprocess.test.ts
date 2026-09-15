@@ -4,7 +4,7 @@ import type { ChatMessage, FileHandle, PromptPreprocessorController } from "@lms
 import { performance } from "node:perf_hooks";
 import { TRANSCRIPT_MARKER } from "../src/constants";
 import { createPreprocessor, type PreprocessDependencies } from "../src/preprocess";
-import { DEFAULT_MODEL_ID } from "../src/modelCatalog";
+import { INHERIT_SETTING } from "../src/settings";
 
 interface MockFile {
   identifier: string;
@@ -25,11 +25,13 @@ function file(name: string, identifier = name): MockFile {
 function harness(
   text: string,
   files: MockFile[],
-  settings: { model?: string; language?: string; includeFilename?: boolean } = {}
+  settings: { model?: string; language?: string; filename?: string } = {},
+  historyTexts: string[] = []
 ) {
   let replacement: string | undefined;
   let consumed: string[] = [];
   let configReads = 0;
+  let historyReads = 0;
   const states: unknown[] = [];
   const abortController = new AbortController();
   const message = {
@@ -49,10 +51,19 @@ function harness(
       configReads += 1;
       return {
         get: (key: string) => {
-          if (key === "language") return settings.language ?? "auto";
-          if (key === "model") return settings.model ?? DEFAULT_MODEL_ID;
-          return settings.includeFilename ?? true;
+          if (key === "language") return settings.language ?? INHERIT_SETTING;
+          if (key === "model") return settings.model ?? INHERIT_SETTING;
+          return settings.filename ?? INHERIT_SETTING;
         }
+      };
+    },
+    pullHistory: async () => {
+      historyReads += 1;
+      return {
+        getMessagesArray: () => historyTexts.map(value => ({
+          getRole: () => "user",
+          getText: () => value
+        }))
       };
     },
     createStatus: () => ({ setState: (state: unknown) => states.push(state) })
@@ -64,6 +75,7 @@ function harness(
     replacement: () => replacement,
     consumed: () => consumed,
     configReads: () => configReads,
+    historyReads: () => historyReads,
     states
   };
 }
@@ -73,6 +85,8 @@ function dependencies(overrides: Partial<PreprocessDependencies> = {}): Preproce
     ensureModel: async () => "/models/whisper-base/revision",
     runHelper: async () => ({ text: "Recognized speech", detectedLanguage: "English" }),
     validateContext: async () => {},
+    loadGlobalSettings: async () => ({ version: 1 }),
+    saveGlobalSettings: async () => {},
     ...overrides
   };
 }
@@ -80,13 +94,30 @@ function dependencies(overrides: Partial<PreprocessDependencies> = {}): Preproce
 test("text-only prompts take the zero-work bypass", async () => {
   const context = harness("ordinary prompt", []);
   let runtimeCalls = 0;
+  let settingsReads = 0;
   const preprocess = createPreprocessor(dependencies({
-    ensureModel: async () => { runtimeCalls += 1; return "/model"; }
+    ensureModel: async () => { runtimeCalls += 1; return "/model"; },
+    loadGlobalSettings: async () => { settingsReads += 1; return { version: 1 }; }
   }));
   const result = await preprocess(context.controller, context.message);
   assert.equal(result, context.message);
   assert.equal(context.configReads(), 0);
   assert.equal(runtimeCalls, 0);
+  assert.equal(settingsReads, 0);
+  assert.equal(context.historyReads(), 0);
+  assert.equal(context.replacement(), undefined);
+});
+
+test("a text-only WhisperBridge command is also untouched", async () => {
+  const context = harness("/wb default model=best", []);
+  let settingsReads = 0;
+  const preprocess = createPreprocessor(dependencies({
+    loadGlobalSettings: async () => { settingsReads += 1; return { version: 1 }; }
+  }));
+  await preprocess(context.controller, context.message);
+  assert.equal(context.configReads(), 0);
+  assert.equal(context.historyReads(), 0);
+  assert.equal(settingsReads, 0);
   assert.equal(context.replacement(), undefined);
 });
 
@@ -171,4 +202,79 @@ test("unsupported language fails before model or helper activity", async () => {
   assert.equal(modelCalls, 0);
   assert.equal(helperCalls, 0);
   assert.deepEqual(context.consumed(), []);
+});
+
+test("a chat directive selects the model and is removed from the outgoing instruction", async () => {
+  const context = harness("/wb model=better language=fr filename=off\nSummarize this", [file("meeting.wav")]);
+  let selectedModel = "";
+  const preprocess = createPreprocessor(dependencies({
+    ensureModel: async model => { selectedModel = model.id; return "/model"; }
+  }));
+  await preprocess(context.controller, context.message);
+  assert.equal(selectedModel, "whisper-small-multilingual");
+  assert.doesNotMatch(context.replacement() ?? "", /\/wb/);
+  assert.match(context.replacement() ?? "", /User request:\nSummarize this/);
+  assert.match(context.replacement() ?? "", /WhisperBridge settings \(chat\)/);
+  assert.doesNotMatch(context.replacement() ?? "", /from “meeting\.wav”/);
+});
+
+test("an invalid directive fails before config, history, settings, model, or helper activity", async () => {
+  const context = harness("/wb model=unknown\nTranscribe", [file("meeting.wav")]);
+  let settingsReads = 0;
+  let modelCalls = 0;
+  let helperCalls = 0;
+  const preprocess = createPreprocessor(dependencies({
+    loadGlobalSettings: async () => { settingsReads += 1; return { version: 1 }; },
+    ensureModel: async () => { modelCalls += 1; return "/model"; },
+    runHelper: async () => { helperCalls += 1; return { text: "unexpected" }; }
+  }));
+  await assert.rejects(preprocess(context.controller, context.message), /View README/);
+  assert.equal(context.configReads(), 0);
+  assert.equal(context.historyReads(), 0);
+  assert.equal(settingsReads, 0);
+  assert.equal(modelCalls, 0);
+  assert.equal(helperCalls, 0);
+  assert.deepEqual(context.consumed(), []);
+});
+
+test("the latest chat marker selects a model in a later audio prompt", async () => {
+  const previous = `${TRANSCRIPT_MARKER}\nWhisperBridge settings (chat): Whisper Small Q5 — Lower-memory multilingual [whisper-small-q5] · language en · filename included`;
+  const context = harness("Continue", [file("next.wav")], {}, [previous]);
+  let selectedModel = "";
+  const preprocess = createPreprocessor(dependencies({
+    ensureModel: async model => { selectedModel = model.id; return "/model"; }
+  }));
+  await preprocess(context.controller, context.message);
+  assert.equal(selectedModel, "whisper-small-q5");
+  assert.match(context.replacement() ?? "", /language en/);
+});
+
+test("a global directive saves only after successful transcription and validation", async () => {
+  const context = harness("/wb default model=smallest filename=off\nTranscribe", [file("note.wav")]);
+  const saved: unknown[] = [];
+  const preprocess = createPreprocessor(dependencies({
+    saveGlobalSettings: async update => { saved.push(update); }
+  }));
+  await preprocess(context.controller, context.message);
+  assert.deepEqual(saved, [{ modelID: "whisper-tiny-multilingual", includeFilename: false }]);
+  assert.match(context.replacement() ?? "", /settings \(default\)/);
+
+  const failed = harness("/wb default model=best\nTranscribe", [file("bad.wav")]);
+  const failedSaves: unknown[] = [];
+  const failingPreprocess = createPreprocessor(dependencies({
+    validateContext: async () => { throw new Error("does not fit"); },
+    saveGlobalSettings: async update => { failedSaves.push(update); }
+  }));
+  await assert.rejects(failingPreprocess(failed.controller, failed.message), /does not fit/);
+  assert.deepEqual(failedSaves, []);
+});
+
+test("a global reset is committed after success", async () => {
+  const context = harness("/wb default reset\nTranscribe", [file("note.wav")]);
+  const saved: unknown[] = [];
+  const preprocess = createPreprocessor(dependencies({
+    saveGlobalSettings: async update => { saved.push(update); }
+  }));
+  await preprocess(context.controller, context.message);
+  assert.deepEqual(saved, [null]);
 });

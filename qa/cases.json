@@ -995,8 +995,8 @@
     "requirement": "R12",
     "priority": "P0",
     "scope": "native",
-    "title": "Speech model selector and per-chat persistence",
-    "preconditions": "Installed multi-model plugin; two LM Studio chats",
+    "title": "Native speech model selector after host fix",
+    "preconditions": "Installed multi-model plugin; LM Studio build with bug #2365 resolved; two chats",
     "steps": ["Open WhisperBridge settings in chat A", "select a non-default model and language", "open chat B and keep defaults", "restart LM Studio and reopen both chats"],
     "expected": "Selector shows friendly purpose, model, size, memory, and license details; each chat retains its own model and language after restart",
     "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
@@ -1058,7 +1058,7 @@
     "title": "Unsupported model language blocks early",
     "preconditions": "English-only Moonshine selected; French selected; Moonshine absent locally",
     "steps": ["Attach French audio and Send"],
-    "expected": "A compatibility error recommends Auto or a compatible profile before filesystem, network, model-store, or helper activity",
+    "expected": "A compatibility error recommends Auto or a compatible profile before network, model download, or helper activity",
     "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
   },
   {
@@ -1107,6 +1107,66 @@
     "preconditions": "Prior plugin installed with verified Whisper and MLX models; current candidate available",
     "steps": ["Update plugin", "restart LM Studio", "transcribe with both retained models", "remove one model through documented storage management"],
     "expected": "Update reuses valid revisions offline; removed model alone is reclaimed and downloads again on later use; other models and chats remain intact",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-074",
+    "use_case": "UC-20",
+    "requirement": "R12",
+    "priority": "P0",
+    "scope": "native",
+    "title": "Prompt directive selection and chat persistence",
+    "preconditions": "Installed plugin on LM Studio 0.4.24; two chats; non-default model cached",
+    "steps": ["In chat A, attach audio and send /wb model=better language=en filename=off plus an instruction", "verify the command is absent and the visible settings line is correct", "send later audio in chat A without a command, then send audio in chat B"],
+    "expected": "Chat A reuses its chosen settings; chat B uses defaults; no directive reaches the language model; each transcript identifies the resolved settings",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-075",
+    "use_case": "UC-20",
+    "requirement": "R11",
+    "priority": "P0",
+    "scope": "native",
+    "title": "Application-wide default, restart, and reset",
+    "preconditions": "Installed plugin; two chats; writable WhisperBridge data directory",
+    "steps": ["Send attached audio with /wb default model=smallest filename=off", "restart LM Studio and send command-free audio in a new chat", "send attached audio with /wb default reset, restart, and test another new chat"],
+    "expected": "The saved default survives restart and applies across chats; reset restores Base/Auto/filename-on defaults; settings writes are complete and contain no partial files",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-076",
+    "use_case": "UC-05",
+    "requirement": "R04",
+    "priority": "P0",
+    "scope": "native",
+    "title": "Invalid fallback command blocks early",
+    "preconditions": "Installed plugin; selected model absent locally",
+    "steps": ["Attach audio and try an unknown key, model, language, filename value, and gated model ID"],
+    "expected": "Each send gives a useful example and View README direction before settings writes, network, model download, helper launch, prompt mutation, or attachment consumption",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-077",
+    "use_case": "UC-20",
+    "requirement": "R11",
+    "priority": "P0",
+    "scope": "native",
+    "title": "Failed global command preserves prior defaults",
+    "preconditions": "Existing global default; cancellable download and context-overflow fixtures",
+    "steps": ["Issue a different /wb default command and cancel its transcription", "repeat with a transcription or context-validation failure", "restart and transcribe without a command"],
+    "expected": "Failed or canceled sends do not replace the prior global settings; original text and attachments remain intact",
+    "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
+  },
+  {
+    "id": "QA-078",
+    "use_case": "UC-20",
+    "requirement": "R12",
+    "priority": "P1",
+    "scope": "native",
+    "title": "Native selector and fallback parity",
+    "preconditions": "LM Studio build with bug #2365 resolved; native configuration fields visible",
+    "steps": ["Transcribe with a model/language/filename combination selected natively", "repeat in another chat with the equivalent /wb directive"],
+    "expected": "Both paths resolve the same catalog model, helper request, transcript format, language behavior, and filename behavior",
     "evidence": "Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths."
   }
 ]

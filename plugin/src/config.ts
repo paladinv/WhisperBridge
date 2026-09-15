@@ -1,5 +1,6 @@
 import { createConfigSchematics } from "@lmstudio/sdk";
-import { AVAILABLE_MODELS, DEFAULT_MODEL_ID, LANGUAGE_OPTIONS } from "./modelCatalog";
+import { AVAILABLE_MODELS, LANGUAGE_OPTIONS } from "./modelCatalog";
+import { INHERIT_SETTING } from "./settings";
 
 export const configSchematics = createConfigSchematics()
   .field(
@@ -8,9 +9,12 @@ export const configSchematics = createConfigSchematics()
     {
       displayName: "Speech model",
       subtitle: "The selected model downloads on the first audio message, then stays on this Mac.",
-      options: AVAILABLE_MODELS.map(model => ({ value: model.id, displayName: model.displayName }))
+      options: [
+        { value: INHERIT_SETTING, displayName: "Use WhisperBridge default" },
+        ...AVAILABLE_MODELS.map(model => ({ value: model.id, displayName: model.displayName }))
+      ]
     },
-    DEFAULT_MODEL_ID
+    INHERIT_SETTING
   )
   .field(
     "language",
@@ -18,17 +22,25 @@ export const configSchematics = createConfigSchematics()
     {
       displayName: "Spoken language",
       subtitle: "Automatic detection works for most recordings.",
-      options: LANGUAGE_OPTIONS
+      options: [
+        { value: INHERIT_SETTING, displayName: "Use WhisperBridge default" },
+        ...LANGUAGE_OPTIONS
+      ]
     },
-    "auto"
+    INHERIT_SETTING
   )
   .field(
-    "includeFilename",
-    "boolean",
+    "filename",
+    "select",
     {
       displayName: "Include source filename",
-      subtitle: "Add the recording name above the transcript."
+      subtitle: "Add the recording name above the transcript.",
+      options: [
+        { value: INHERIT_SETTING, displayName: "Use WhisperBridge default" },
+        { value: "include", displayName: "Include filename" },
+        { value: "omit", displayName: "Omit filename" }
+      ]
     },
-    true
+    INHERIT_SETTING
   )
   .build();

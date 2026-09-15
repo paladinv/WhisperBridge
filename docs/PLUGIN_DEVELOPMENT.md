@@ -39,6 +39,8 @@ Use `lms dev --install` for a persistent local installation. The development dat
 
 Installed prompt preprocessors are enabled per chat from the chat sidebar's **Integrations** panel. They are not listed in **Settings → Integrations → Tool Call Confirmation**, which applies only to tools a model can call.
 
-The first attached audio prompt downloads and verifies the model selected for that chat. Selection itself performs no network activity. Text-only prompts return immediately without reading configuration, touching the filesystem, starting the helper, or checking the model.
+LM Studio 0.4.23 and 0.4.24 do not expose registered plugin configuration fields because of host bug #2365. Exercise the fallback with an attached audio file and a first line such as `/wb model=better language=auto filename=on`. The plugin strips the line, records the resolved choice in the transformed chat message, and saves `/wb default ...` changes under the selected `WHISPERBRIDGE_DATA_DIR`. Do not use text-only `/wb` messages as configuration commands.
+
+The first attached audio prompt downloads and verifies the resolved model. Selection itself performs no network activity. Text-only prompts return immediately without reading configuration or history, touching the filesystem, starting the helper, or checking the model.
 
 Production models live under `~/Library/Application Support/LM Studio/WhisperBridge/models/<model-id>/<revision>/`. Development and model-smoke commands must set `WHISPERBRIDGE_DATA_DIR` to a path under `.build-artifacts/`; the helper also redirects Hugging Face, Transformers, and MLX caches below that model revision so those runtimes cannot silently create global model caches.

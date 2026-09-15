@@ -109,3 +109,13 @@ The official LM Studio installer updated `paladinv/whisperbridge` from LM Studio
 Before cleanup, reusable Derived Data was 312,056 KiB and the release-helper Derived Data was 2,139,272 KiB, both below 10 GiB. Large downloaded checkpoint fixtures and failed/intermediate result artifacts are removed only after the final verification step; retained final evidence remains repository-local.
 
 The final audit then added the missing `mlx-audio-swift` declaration to `project.yml` and regenerated the checked-in Xcode project. Because that changed the recorded project fingerprint, a new `build-for-testing` receipt was required. It succeeded in about 6.8 seconds of command wall time; the extracted action duration was 1.63 seconds with zero errors and warnings. The post-generation `test-without-building` milestone reused that receipt and passed the same 11 expected selectors: 11 passed, 0 failed, 0 missing, 0 unexpected, and 0 unrun. This supersedes the prior final native milestone as the completion result.
+
+## Alternate model-selection addendum
+
+Date: 2026-09-15. LM Studio 0.4.24+1 still exhibits host bug #2365, so WhisperBridge now supports audio-bound `/wb` chat directives and atomic application-wide defaults while retaining its native configuration schema. The transformed transcript records a visible, anchored settings line for chat inheritance. Global changes commit only after a successful transcription and context check.
+
+The focused prompt/settings group passed 27 of 27 selectors in 0.209 seconds. The final plugin suite passed 38 of 38 in 0.948 seconds; its 10,000-call text-only measurement was 8.85 ms and confirmed zero configuration, history, filesystem, model, or helper work. The QA catalog validates 78 cases and still records 0 manual passes.
+
+Native source/configuration/toolchain inputs were unchanged, so the successful project-local Derived Data receipt was reused. A sandboxed SwiftPM attempt executed no selectors; the permitted `test-without-building` retry passed all 11 expected native selectors in 12.83 seconds. Standalone `xcresulttool` extraction and separate JSON processing produced exact accounting of 11 passed, 0 failed, 0 missing, 0 unexpected, and 0 unrun. The real LM Studio file-handle test passed in 5.9 seconds with the exact transcript and verified directive removal, visible settings, filename omission, and attachment consumption.
+
+The official LM Studio installer updated the plugin in 0.82 seconds. Its production bundle and View README content contain the fallback selection mechanism and all available larger Whisper IDs. See `qa/evidence/fallback-selection-20260915.md` for command history, installed verification, artifacts, cache sizes, and remaining manual gates.

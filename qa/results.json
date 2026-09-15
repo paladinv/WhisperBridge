@@ -535,5 +535,20 @@
   },
   {
     "id": "QA-073", "status": "NOT_RUN", "actual": "", "evidence": [], "tester": "", "environment": ""
+  },
+  {
+    "id": "QA-074", "status": "NOT_RUN", "actual": "", "evidence": [], "tester": "", "environment": ""
+  },
+  {
+    "id": "QA-075", "status": "NOT_RUN", "actual": "", "evidence": [], "tester": "", "environment": ""
+  },
+  {
+    "id": "QA-076", "status": "NOT_RUN", "actual": "", "evidence": [], "tester": "", "environment": ""
+  },
+  {
+    "id": "QA-077", "status": "NOT_RUN", "actual": "", "evidence": [], "tester": "", "environment": ""
+  },
+  {
+    "id": "QA-078", "status": "NOT_RUN", "actual": "", "evidence": [], "tester": "", "environment": ""
   }
 ]

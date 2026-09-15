@@ -866,11 +866,11 @@ P1 · future · UC-11 · R08
 
 **Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
 
-## QA-064 — Speech model selector and per-chat persistence
+## QA-064 — Native speech model selector after host fix
 
 P0 · native · UC-20 · R12
 
-**Preconditions:** Installed multi-model plugin; two LM Studio chats
+**Preconditions:** Installed multi-model plugin; LM Studio build with bug #2365 resolved; two chats
 
 1. Open WhisperBridge settings in chat A.
 2. select a non-default model and language.
@@ -946,7 +946,7 @@ P0 · native · UC-05 · R04
 
 1. Attach French audio and Send.
 
-**Pass condition:** A compatibility error recommends Auto or a compatible profile before filesystem, network, model-store, or helper activity
+**Pass condition:** A compatibility error recommends Auto or a compatible profile before network, model download, or helper activity
 
 **Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
 
@@ -1002,5 +1002,72 @@ P0 · native · UC-16 · R11
 4. remove one model through documented storage management.
 
 **Pass condition:** Update reuses valid revisions offline; removed model alone is reclaimed and downloads again on later use; other models and chats remain intact
+
+**Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## QA-074 — Prompt directive selection and chat persistence
+
+P0 · native · UC-20 · R12
+
+**Preconditions:** Installed plugin on LM Studio 0.4.24; two chats; non-default model cached
+
+1. In chat A, attach audio and send `/wb model=better language=en filename=off` plus an instruction.
+2. Verify the command is absent from the transformed instruction and the visible settings line is correct.
+3. Send later audio in chat A without a command, then send audio in chat B.
+
+**Pass condition:** Chat A reuses its chosen settings; chat B uses defaults; no directive reaches the language model; each transcript identifies the resolved settings
+
+**Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## QA-075 — Application-wide default, restart, and reset
+
+P0 · native · UC-20 · R11
+
+**Preconditions:** Installed plugin; two chats; writable WhisperBridge data directory
+
+1. Send attached audio with `/wb default model=smallest filename=off`.
+2. Restart LM Studio and send command-free audio in a new chat.
+3. Send attached audio with `/wb default reset`, restart, and test another new chat.
+
+**Pass condition:** The saved default survives restart and applies across chats; reset restores Base/Auto/filename-on defaults; settings writes are complete and contain no partial files
+
+**Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## QA-076 — Invalid fallback command blocks early
+
+P0 · native · UC-05 · R04
+
+**Preconditions:** Installed plugin; selected model absent locally
+
+1. Attach audio and try an unknown key, model, language, filename value, and gated model ID.
+
+**Pass condition:** Each send gives a useful example and View README direction before settings writes, network, model download, helper launch, prompt mutation, or attachment consumption
+
+**Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## QA-077 — Failed global command preserves prior defaults
+
+P0 · native · UC-20 · R11
+
+**Preconditions:** Existing global default; cancellable download and context-overflow fixtures
+
+1. Issue a different `/wb default ...` command and cancel its transcription.
+2. Repeat with a transcription or context-validation failure.
+3. Restart and transcribe without a command.
+
+**Pass condition:** Failed or canceled sends do not replace the prior global settings; original text and attachments remain intact
+
+**Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.
+
+## QA-078 — Native selector and fallback parity
+
+P1 · native · UC-20 · R12
+
+**Preconditions:** LM Studio build with bug #2365 resolved; native configuration fields visible
+
+1. Transcribe with a model/language/filename combination selected natively.
+2. Repeat in another chat with the equivalent `/wb` directive.
+
+**Pass condition:** Both paths resolve the same catalog model, helper request, transcript format, language behavior, and filename behavior
 
 **Evidence:** Record candidate/OS/LM Studio/model versions, actual result, and workspace-relative screenshot/log/measurement paths.

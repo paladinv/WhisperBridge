@@ -2,6 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { MAXIMUM_BYTES, TRANSCRIPT_MARKER } from "../src/constants";
 import { formatPrompt, isSupportedAudio, safeDisplayName, validateAudio } from "../src/prompt";
+import { parseSettingsMarker } from "../src/settings";
+
+const settings = {
+  modelID: "whisper-base-multilingual",
+  language: "auto",
+  includeFilename: true,
+  scope: "inherit" as const
+};
 
 test("detects supported audio extensions without case sensitivity", () => {
   assert.equal(isSupportedAudio({ name: "meeting.M4A", sizeBytes: 20 }), true);
@@ -17,22 +25,23 @@ test("rejects empty and oversized audio before runtime work", () => {
 });
 
 test("preserves the instruction and delimits the transcript", () => {
-  const result = formatPrompt("Summarize this", " Hello world. ", "meeting.m4a", true);
+  const result = formatPrompt("Summarize this", " Hello world. ", "meeting.m4a", settings);
   assert.ok(result.startsWith(TRANSCRIPT_MARKER));
   assert.match(result, /User request:\nSummarize this/);
   assert.match(result, /Audio transcript from “meeting\.m4a”/);
   assert.match(result, /BEGIN WHISPERBRIDGE TRANSCRIPT/);
   assert.match(result, /Hello world\./);
+  assert.deepEqual(parseSettingsMarker(result), settings);
 });
 
 test("supports an audio-only prompt and optional filename", () => {
-  const result = formatPrompt("   ", "Spoken note", "private.m4a", false);
+  const result = formatPrompt("   ", "Spoken note", "private.m4a", { ...settings, includeFilename: false });
   assert.doesNotMatch(result, /User request/);
   assert.doesNotMatch(result, /private\.m4a/);
 });
 
 test("rejects an empty transcript", () => {
-  assert.throws(() => formatPrompt("Summarize", "  ", "meeting.wav", true), /No speech/);
+  assert.throws(() => formatPrompt("Summarize", "  ", "meeting.wav", settings), /No speech/);
 });
 
 test("sanitizes control characters in displayed filenames", () => {

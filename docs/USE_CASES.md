@@ -158,6 +158,6 @@ All flows below are proposed acceptance contracts. UC-20 is conditional; UC-01 t
 
 - Requirement: R12
 - Preconditions / trigger: A supported, installed integration is proven on an exact host version.
-- Main flow: Select audio through the supported flow and run the documented hook.
+- Main flow: Select audio through the supported flow, optionally choose chat or global speech settings with the documented first-line command, and run the hook.
 - Exceptions: Cancellation, host upgrade or unsupported attachments preserve message integrity.
-- Success postcondition: Transcript appears in the correct chat; composer insertion is claimed only if separately verified.
+- Success postcondition: Transcript and resolved settings appear in the correct chat; later audio inherits the intended chat/global choice; composer insertion is claimed only if separately verified.

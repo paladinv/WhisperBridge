@@ -1,6 +1,6 @@
 # Speech model catalog
 
-WhisperBridge stores the model choice per LM Studio chat. Changing the selector does not download anything. The next audio Send validates language and disk space, downloads only the declared files into a staging directory, verifies their sizes and SHA-256 hashes, writes a revision receipt, atomically activates the model, transcribes, and exits the helper. A verified local model is reusable offline and across chats.
+WhisperBridge stores a prompt-selected model choice in the resulting LM Studio chat history and can save application-wide defaults in `settings-v1.json` beside its model store. Changing a selection does not download anything. The audio Send validates language and disk space, downloads only the declared files into a staging directory, verifies their sizes and SHA-256 hashes, writes a revision receipt, atomically activates the model, transcribes, and exits the helper. A verified local model is reusable offline and across chats. LM Studio's native selector remains registered for use after [host bug #2365](https://github.com/lmstudio-ai/lmstudio-bug-tracker/issues/2365) is fixed.
 
 ## Available profiles
 

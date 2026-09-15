@@ -1,5 +1,6 @@
 import path from "node:path";
 import { AUDIO_EXTENSIONS, MAXIMUM_BYTES, TRANSCRIPT_MARKER } from "./constants";
+import { formatSettingsLine, type ResolvedSpeechSettings } from "./settings";
 
 export interface AudioCandidate {
   name: string;
@@ -31,19 +32,19 @@ export function formatPrompt(
   instruction: string,
   transcript: string,
   filename: string,
-  includeFilename: boolean
+  settings: ResolvedSpeechSettings
 ): string {
   const cleanTranscript = transcript.trim();
   if (!cleanTranscript) {
     throw new Error("No speech was detected in the recording.");
   }
 
-  const sections = [TRANSCRIPT_MARKER];
+  const sections = [`${TRANSCRIPT_MARKER}\n${formatSettingsLine(settings)}`];
   const cleanInstruction = instruction.trim();
   if (cleanInstruction) {
     sections.push(`User request:\n${cleanInstruction}`);
   }
-  const source = includeFilename ? ` from “${safeDisplayName(filename)}”` : "";
+  const source = settings.includeFilename ? ` from “${safeDisplayName(filename)}”` : "";
   sections.push(
     `Audio transcript${source}:\n--- BEGIN WHISPERBRIDGE TRANSCRIPT ---\n${cleanTranscript}\n--- END WHISPERBRIDGE TRANSCRIPT ---`
   );
