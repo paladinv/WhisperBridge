@@ -1,6 +1,6 @@
 import XCTest
 final class WhisperSmokeTests: XCTestCase {
-    func testPinnedWhisperModelTranscribesLocalSpeechFixture() async throws {
+    func testPinnedWhisperModelAutoDetectsAndTranscribesLocalSpeechFixture() async throws {
         let root = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
             .deletingLastPathComponent()
@@ -18,12 +18,13 @@ final class WhisperSmokeTests: XCTestCase {
         let result = try await WhisperEngine().transcribe(
             samples: samples,
             modelURL: modelURL,
-            language: .english,
+            language: .auto,
             cancellation: TranscriptionCancellation(),
             progress: { _ in }
         )
 
         XCTAssertFalse(result.text.isEmpty)
         XCTAssertTrue(result.text.localizedCaseInsensitiveContains("audio"), "Actual transcript: \(result.text)")
+        XCTAssertEqual(result.detectedLanguage?.lowercased(), "english")
     }
 }

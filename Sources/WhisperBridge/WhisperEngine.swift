@@ -63,7 +63,10 @@ actor WhisperEngine {
         parameters.print_timestamps = false
         parameters.suppress_blank = true
         parameters.suppress_nst = true
-        parameters.detect_language = language == .auto
+        // `detect_language` is a detection-only mode in whisper.cpp and returns before
+        // decoding segments. Automatic transcription uses the special `auto` language
+        // value with detection-only mode disabled.
+        parameters.detect_language = false
         parameters.progress_callback = { _, _, value, userData in
             guard let userData else { return }
             Unmanaged<CallbackBox>.fromOpaque(userData).takeUnretainedValue().progress(Int(value))

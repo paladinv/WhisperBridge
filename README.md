@@ -24,6 +24,8 @@ The plugin SDK is currently in private beta. The official local installer has in
 
 To use the installed plugin, open a Chat and select the **Integrations** panel in the chat's right sidebar (hammer icon), then enable `paladinv/whisperbridge`. Its language and filename settings are per-chat. It does not appear under **Settings → Integrations → Tool Call Confirmation** because WhisperBridge preprocesses attachments before inference and does not expose model-callable tools.
 
+For current LM Studio beta builds, disable the bundled RAG integration in audio-transcription chats. RAG treats audio as a document and may run before WhisperBridge, adding substantial delay and irrelevant context. If the app exposes integration ordering, place WhisperBridge before RAG.
+
 ### Companion fallback
 
 - One-click download and SHA-256 verification of Whisper Base Multilingual
