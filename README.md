@@ -1,12 +1,12 @@
 # WhisperBridge
 
-**Audio files → reviewed text → LM Studio prompts.**
+**Local audio transcription inside LM Studio prompts.**
 
 ![WhisperBridge logo](assets/logo.svg)
 
-WhisperBridge is a small macOS companion for [LM Studio](https://lmstudio.ai/). Drop in a recording, transcribe it locally with Whisper, correct the text, and copy it into any LM Studio prompt. The everyday workflow needs no Python, API key, database, or local server.
+WhisperBridge is moving toward an in-app [LM Studio](https://lmstudio.ai/) plugin. The intended workflow is to attach a recording to an LM Studio prompt, transcribe it locally with Whisper when Send is selected, and pass the resulting text to the chosen model. The everyday workflow should need no Python, API key, database, local server, or separately launched app.
 
-WhisperBridge is an independent project. It does not modify LM Studio and does not claim a private plugin API; version 1 uses the dependable macOS clipboard handoff.
+The repository currently contains a working native macOS companion and its tested transcription core. The official plugin route is feasible in principle, but audio byte access and local-runtime packaging remain explicit proof gates. See the [LM Studio plugin feasibility and implementation plan](docs/LM_STUDIO_PLUGIN_PLAN.md). WhisperBridge remains an independent project and will use supported plugin hooks rather than patching LM Studio.
 
 ## What works
 
@@ -21,6 +21,8 @@ WhisperBridge is an independent project. It does not modify LM Studio and does n
 The model download is the only network operation in the core workflow. Audio and transcript text stay on the Mac. Copying text uses the system clipboard, which can sync if Universal Clipboard is enabled.
 
 ## Run the app
+
+These instructions run the current companion implementation while plugin integration is developed.
 
 Requirements: macOS 14 or newer, Apple silicon, and Xcode 16 or newer.
 
@@ -49,6 +51,7 @@ The separate QA kit covers novice setup and product behavior that code tests can
 - [Step-by-step QA cases](qa/CASES.md)
 - [Machine-readable cases](qa/cases.json) and [execution records](qa/results.json)
 - [Implementation regression report](qa/REGRESSION_REPORT.md)
+- [LM Studio plugin feasibility and implementation plan](docs/LM_STUDIO_PLUGIN_PLAN.md)
 
 Validate the QA records with:
 

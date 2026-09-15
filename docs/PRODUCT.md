@@ -2,7 +2,7 @@
 
 ## Outcome and audience
 
-A casual LM Studio user can turn a saved voice memo, interview or lecture into editable text without installing developer tools. The user decides what enters the prompt and when it is sent. Whisper performs speech recognition locally; the LM Studio language model answers questions about the resulting text.
+A casual LM Studio user can attach a saved voice memo, interview, or lecture to a normal LM Studio prompt and have Whisper convert it to local text before the chosen model responds. The plugin requires no developer tools or separately launched app. The user chooses the audio and selects Send; the resulting transcript is visible in LM Studio history.
 
 Target the user's current macOS context first: Apple Silicon, macOS 14 or newer, with exact supported OS releases validated before publication. Intel Mac, Windows and Linux are future ports, not implied support. No specific LM Studio version is certified yet. Test the current stable release at release time and the previous supported release; record exact build numbers.
 
@@ -10,47 +10,47 @@ Target the user's current macOS context first: Apple Silicon, macOS 14 or newer,
 
 | Requirement | Acceptance contract |
 | --- | --- |
-| R01 Easy setup | One signed/notarized application; guided model download; no shell, Python, Homebrew, FFmpeg installation or API key required. |
+| R01 Easy setup | One LM Studio plugin installation; guided model download; no shell, Python, Homebrew, FFmpeg installation, API key, or separately launched app required. |
 | R02 File import | One file per job. WAV PCM, MP3, unprotected M4A/AAC and FLAC are target formats, conditional on decoder QA. Validate content, not just extension. |
 | R03 Local model | One recommended multilingual Whisper base model initially; display actual download bytes and storage needs from a pinned manifest. Verify SHA-256 before loading; provide Retry and Cancel. |
 | R04 Recognition | Auto language by default; manual language override. Preserve source language. No translation, speaker identification or automatic rewriting in v1. |
-| R05 Review | Editable Unicode transcript, original recognition result retained in memory, Reset with confirmation, explicit Copy and Save text. |
-| R06 Prompt handoff | Copy only on action; user pastes into LM Studio at their selected location. Never auto-send, steal focus or overwrite another app's draft. |
-| R07 Recovery | Cancel, retry, clear error messages and intact prior reviewed output after a failed replacement job. |
-| R08 Privacy | Audio and recognition stay local after model download. No telemetry by default. No transcript/audio in diagnostic logs. Explain clipboard and LM Studio history separately. |
+| R05 Transcript visibility | Unicode transcript is inserted into the sent user message and retained in LM Studio history. Review-before-send is conditional on a supported composer API and is not promised for the preprocessor version. |
+| R06 Prompt handoff | The prompt preprocessor runs only after the user selects Send, preserves the typed instruction, consumes the audio attachment, and supplies the delimited transcript to the chosen model. |
+| R07 Recovery | Cancel, retry, clear error messages, and an intact typed instruction and chat after a failed job. |
+| R08 Privacy | Audio and recognition stay local after model download. No telemetry by default. No transcript/audio in diagnostic logs. Explain LM Studio history retention. |
 | R09 Accessibility | Keyboard-only flow, VoiceOver names/state announcements, visible focus, text scaling and sufficient contrast; status does not rely on color alone. |
 | R10 Resource limits | Proposed maximum: 500 MiB and 2 hours, both inclusive. Reject over-limit jobs before inference; enforce decoded duration too. One active job, bounded decode buffers. |
-| R11 Lifecycle | Offline repeat use; atomic updates; cleanup of intermediate audio; no changes to original files; explicit unsaved-work handling on quit. |
-| R12 Native integration | Conditional follow-on: supported LM Studio hook, preserved message content and chat isolation, validated installation. No unsupported UI injection claim. |
+| R11 Lifecycle | Offline repeat use; atomic updates; cleanup of intermediate audio; no changes to original files; safe LM Studio restart and plugin removal. |
+| R12 Native integration | Supported LM Studio prompt-preprocessor hook, preserved message content and chat isolation, validated installation. No unsupported UI injection claim. |
 
-The source implementation enforces the 500 MiB and two-hour input limits. Timing, decoder compatibility, and usability thresholds remain release targets until the manual QA matrix is complete. If FLAC fails the supported-platform decoder matrix, bundle and license a decoder or remove FLAC from advertised support before release. Never ask casual users to resolve codecs.
+The current native transcription core enforces the 500 MiB and two-hour input limits. The plugin must preserve those limits. Timing, decoder compatibility, and usability thresholds remain release targets until the manual QA matrix is complete. If FLAC fails the supported-platform decoder matrix, bundle and license a decoder or remove FLAC from advertised support before release. Never ask casual users to resolve codecs.
 
-## Screen and interaction contract
+## Interaction contract
 
-One window, with a compact brand mark, “Choose audio” drop zone, selected filename/duration, a language menu under Options, and one main action. States: Welcome → Model download → Ready → Validating → Transcribing → Review. Error and Cancel return to Ready or the prior Review. Save and Copy are disabled until nonempty text exists. Transcribe is disabled during a job. Dropping multiple files explains “Choose one audio file” without silently selecting one.
+Use LM Studio's existing chat composer and attachment control. When the user selects Send, the plugin moves through Model download → Validating → Transcribing → Prompt transformation using in-app status. Cancellation or an error must prevent a partial prompt from reaching the model. Multiple audio files receive a clear action instead of silent selection.
 
-During a job show the active stage and elapsed time, with Cancel. Show percentages only if based on real progress; do not freeze at fabricated 99%. At completion, focus the review heading without interrupting ongoing editing. If the user selects a new file while a reviewed draft is dirty, ask Keep editing or Discard and continue. Never lose a draft implicitly. Retry uses the selected language and file, starts a fresh job, and cannot merge stale callbacks into another transcript.
+During a job show the active stage and elapsed time, with Cancel. Show percentages only if based on real progress; do not freeze at fabricated 99%. Retry uses the selected language and file, starts a fresh job, and cannot merge stale callbacks into another transcript or chat.
 
 “No speech detected” is a normal result, not an error or an invented transcript. Low-quality recordings receive a plain notice to review names and numbers; do not invent word-level confidence scores. Overlapping speakers may be inaccurate and are not diarized. Manual language selection is the recovery path for a wrong auto-detection.
 
 ## Installation and architecture
 
-The implementation consists of a native SwiftUI shell, AVFoundation audio decoder, pinned `whisper.cpp` runtime, and app-managed model manifest/downloader. Transcription needs neither an LLM loaded nor LM Studio's HTTP server. The UI and model work are separated so a long job does not block controls. Further release work must bound decoded-audio memory for two-hour files and validate accelerated and CPU behavior across supported Macs.
+The target implementation consists of an LM Studio TypeScript prompt preprocessor and a packaged local Whisper runtime. The preferred runtime spike reuses the existing AVFoundation decoder and pinned `whisper.cpp` engine through a headless helper; a WASM runtime is the fallback if supported plugin distribution cannot launch or package that helper. Transcription does not require LM Studio's HTTP server. Runtime work must not block the LM Studio UI. See [the gated implementation plan](LM_STUDIO_PLUGIN_PLAN.md).
 
-First launch explains the model download size, destination and why internet is needed. Download to a partial file, check expected size/hash, then rename atomically. Insufficient storage and interrupted downloads retain a recoverable state. Do not execute unverified binaries from a model download. Distribute native libraries with the application, pin their versions, and include their notices. Normal installed app data will use its approved application container; all development/test paths in this repository must remain within the workspace per AGENTS.md.
+First use explains the model download size, destination, and why internet is needed. Download to a partial file, check expected size/hash, then rename atomically. Insufficient storage and interrupted downloads retain a recoverable state. Do not execute unverified binaries from a model download. Package native libraries with the plugin, pin their versions, and include their notices. Store installed data only in locations LM Studio grants to the plugin; all development/test paths in this repository must remain within the workspace per AGENTS.md.
 
 ## Data contract
 
-Keep a job ID, source display name, decoded duration, selected/detected language, model version/hash, raw text and edited text in memory. Retain no audio copy beyond the active job. Intermediate decode files are removed on completion/cancel and after restart following a crash. Do not recover private transcripts to disk by default. On quit with unsaved text, offer Save, Discard, Cancel. Original recordings are never edited or deleted.
+Keep a job ID, chat/job scope, source display name, decoded duration, selected/detected language, model version/hash, and raw transcript in memory during preprocessing. Retain no audio copy beyond the active job. Intermediate decode files are removed on completion/cancel and after restart following a crash. The transformed user message is retained by LM Studio according to its chat-history behavior. Original recordings are never edited or deleted.
 
-Save exports UTF-8 plain text to the user's chosen destination; confirm overwrites and preserve edit contents exactly. Clipboard ownership is shared with the OS and may sync; never claim the app can erase all clipboard history. Clearing the app does not clear LM Studio's chat history or an exported file. Diagnostics contain versions, stage codes and timings, with private paths and content redacted.
+Plugin removal does not erase messages already stored in LM Studio history. Model removal and cache retention must be explicit choices. Diagnostics contain versions, stage codes, and timings, with private paths and content redacted.
 
 ## LM Studio prompt behavior
 
-Default Copy transfers exactly the reviewed transcript. Users can prepend “Summarize these notes” or their own instruction after pasting. Do not wrap the transcript in a command to rewrite it automatically. A future template mode must clearly label source text and separate it from the user's instruction; delimiters are not a guarantee against prompt injection.
+The plugin preserves the user's typed instruction and appends a clearly labeled, delimited transcript. It does not automatically ask the model to rewrite the source. Delimiters help separate instruction from source text but do not guarantee protection from prompt injection.
 
-The companion cannot know a chat's remaining token budget. Show character count and advice to shorten/split large text; do not label a guessed token count as exact or silently summarize/truncate. Test the real LM Studio context-overflow response. The user should retain their transcript even when a selected LLM cannot accept it.
+Test the real LM Studio context-overflow response and never silently summarize or truncate a transcript. If the plugin API exposes the selected model's exact context state, use it; otherwise give a clear size error before inference. The transformed transcript should remain recoverable when a selected model cannot accept it.
 
 ## Definition of done
 
-The packaged workflow passes the baseline QA suite and novice study on supported machines; privacy and recovery evidence exists; install/uninstall work without terminal instructions; dependencies and licenses are recorded. Native add-on claims additionally require the native QA suite. Compiling or checking the QA files alone never satisfies either release definition.
+The packaged plugin passes the baseline QA suite and novice study on supported machines; privacy, performance, and recovery evidence exists; install/uninstall work without terminal instructions; dependencies and licenses are recorded. In-app claims require the plugin acceptance suite. Compiling or checking the QA files alone never satisfies the release definition.
