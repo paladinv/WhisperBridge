@@ -1,0 +1,22 @@
+{
+  "name": "lms-plugin-whisperbridge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Transcribe attached audio locally before an LM Studio prompt is sent.",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "dev": "lms dev",
+    "install:local": "lms dev --install",
+    "test": "node --import tsx --test test/*.test.ts"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@lmstudio/sdk": "1.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.3",
+    "tsx": "4.19.3",
+    "typescript": "5.8.3"
+  }
+}

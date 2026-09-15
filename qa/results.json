@@ -425,11 +425,13 @@
   },
   {
     "id": "QA-054",
-    "status": "NOT_RUN",
-    "actual": "",
-    "evidence": [],
-    "tester": "",
-    "environment": ""
+    "status": "BLOCKED",
+    "actual": "LM Studio identified paladinv/whisperbridge, but its daemon received EPERM opening plugin/manifest.json because macOS denied this host process access to the repository in Documents. No in-app attachment run was claimed.",
+    "evidence": [
+      "qa/evidence/plugin-implementation-20260914.md"
+    ],
+    "tester": "Codex",
+    "environment": "Apple M4 Max; macOS 26.4.1; LM Studio 0.4.19+2; plugin source at d6b3a5b plus working implementation changes"
   },
   {
     "id": "QA-055",

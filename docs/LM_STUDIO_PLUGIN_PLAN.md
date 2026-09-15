@@ -2,6 +2,12 @@
 
 Reviewed 2026-09-14 against LM Studio 0.4.19+2 and the current official TypeScript plugin documentation.
 
+## Implementation status
+
+The repository now implements the TypeScript prompt preprocessor, configuration, pinned model download and verification, versioned helper protocol, Apple silicon helper target, packaged `whisper.cpp` runtime, prompt transformation, failure-safe attachment consumption, progress, cancellation, focused automated tests, and development packaging workflow.
+
+SDK 1.4.0 confirms that an attached `FileHandle` exposes `getFilePath()`. The helper has completed a real local speech fixture within the short-file performance budget. The installed in-app path remains blocked on this development host because the LM Studio daemon lacks permission to open the repository under the macOS Documents folder. Gates A, C, and D therefore remain incomplete until an installed plugin is exercised through the actual LM Studio composer. Gate B's functional and short-fixture timing portions pass on the recorded M4 Max environment; long-file memory and cancellation measurements remain pending.
+
 ## Decision
 
 Build WhisperBridge as an LM Studio **prompt-preprocessor plugin**. The user attaches an audio file to the normal LM Studio composer, optionally types an instruction, and selects Send. WhisperBridge transcribes locally, consumes the audio attachment, and replaces the outgoing user message with the instruction plus a clearly delimited transcript. LM Studio then sends that transformed message to the selected model and stores it in chat history.

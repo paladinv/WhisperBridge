@@ -45,3 +45,31 @@ The model hash selector completed in 0.072 seconds against a 3-second budget. En
 The machine-readable accounting and extracted XCTest JSON are retained under `.build-artifacts/regression-20260914/`. Manual product QA remains 0 passed; this report does not replace the signed-package, privacy, accessibility, LM Studio interoperability, corpus accuracy, resource, or novice-user cases in the QA ledger.
 
 After the final milestone passed, redundant build and failed/duplicate run artifacts were removed in one scoped cleanup. The retained reusable Derived Data cache is 125,932 KiB (about 123 MiB), below the 10 GiB ceiling. The complete remaining `.build-artifacts` directory is 273,240 KiB (about 267 MiB), including the pinned model and speech fixture needed to repeat the performance checks.
+
+## LM Studio plugin implementation addendum
+
+The 2026-09-14 plugin change added a TypeScript prompt preprocessor, model manager, native-helper protocol, Apple silicon command-line target, packaged runtime, and plugin-focused tests. A rebuild was required because `project.yml`, the generated Xcode project, and Swift sources changed. All build output, caches, logs, result bundles, model data, and fixtures remained below `.build-artifacts/`.
+
+| Verification group | Selected selectors | Duration or measurement | Result |
+| --- | ---: | ---: | --- |
+| TypeScript static build | compilation | less than 1 s | passed |
+| Plugin unit and contract tests | 16 | 0.148 s | 16 passed |
+| Packaged helper real-speech smoke | 1 | 8.00 s cold; 0.61 s warm | passed with expected transcript |
+| Existing Swift domain/decoder/Whisper/performance regression | 11 | 0.437 s direct XCTest execution | 11 passed |
+| Package content inspection | one package | 5.7 MB unpacked | passed; no duplicate framework and an explicit framework load path |
+
+The plugin test selectors cover the text-only bypass, idempotence, attachment mutation safety, context-overflow safety, multiple-audio rejection, prompt formatting, filename sanitization, model data-directory isolation, versioned helper communication, and helper cancellation. The 10,000-call text-only microbenchmark took 6.93 ms on this host. This establishes negligible local preprocessor overhead in the mocked no-attachment path; an installed LM Studio prompt-latency comparison remains part of blocked native QA.
+
+The first `xcodebuild test-without-building` attempt was sandbox-blocked from Apple's test service. The escalated retry reached the test service but it reported that it could not create the on-disk, valid XCTest bundle. This infrastructure retry is retained in the Xcode logs and result bundles. Direct `xcrun xctest` execution of that same built bundle then passed all 11 expected selectors. No source rebuild occurred between the escalated Xcode attempt and direct bundle execution.
+
+Exact automated accounting for the plugin milestone:
+
+- Expected unique selectors: 28
+- Passed: 28
+- Failed: 0
+- Missing: 0
+- Unexpected: 0
+- Unrun: 0
+- Retried selectors: 11 through the direct XCTest runner after Xcode test-runner infrastructure failure; counted once in coverage
+
+QA-054 remains BLOCKED by macOS Documents-folder permission when the LM Studio daemon opens the development plugin manifest. Other native product cases remain NOT_RUN. These product states do not change the automated accounting above. Failed/interrupted result bundles are retained because the installed native milestone has not passed. The complete `.build-artifacts/` directory is approximately 753 MiB; the plugin Derived Data cache is approximately 163 MiB and the retained application test Derived Data is approximately 123 MiB, both below 10 GiB.

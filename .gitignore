@@ -5,3 +5,4 @@ __pycache__/
 qa/private-fixtures/
 qa/private-evidence/
 models/
+plugin/node_modules/

@@ -6,9 +6,23 @@
 
 WhisperBridge is moving toward an in-app [LM Studio](https://lmstudio.ai/) plugin. The intended workflow is to attach a recording to an LM Studio prompt, transcribe it locally with Whisper when Send is selected, and pass the resulting text to the chosen model. The everyday workflow should need no Python, API key, database, local server, or separately launched app.
 
-The repository currently contains a working native macOS companion and its tested transcription core. The official plugin route is feasible in principle, but audio byte access and local-runtime packaging remain explicit proof gates. See the [LM Studio plugin feasibility and implementation plan](docs/LM_STUDIO_PLUGIN_PLAN.md). WhisperBridge remains an independent project and will use supported plugin hooks rather than patching LM Studio.
+The repository now contains an LM Studio prompt-preprocessor plugin, a packaged Apple silicon transcription helper, and the original native macOS companion. The plugin uses LM Studio's supported attachment path API, transcribes locally, consumes only the successfully processed audio attachment, and inserts the transcript into the outgoing message. See the [implementation and remaining release gates](docs/LM_STUDIO_PLUGIN_PLAN.md). WhisperBridge remains an independent project and does not patch LM Studio.
 
 ## What works
+
+### LM Studio plugin
+
+- Constant-time bypass for text-only prompts, without model or helper startup
+- WAV, MP3, M4A, AAC, and FLAC attachment detection
+- Local model download with pinned size and SHA-256 verification
+- LM Studio status updates and cancellation propagation
+- Packaged Apple silicon Swift/AVFoundation/`whisper.cpp` helper
+- Preservation of typed instructions and unrelated attachments
+- Transcript insertion into the sent message and LM Studio history
+
+The plugin SDK is currently in private beta. Local installation is implemented but remains a release gate because the LM Studio daemon on this development host was denied access to the repository by macOS Documents privacy.
+
+### Companion fallback
 
 - One-click download and SHA-256 verification of Whisper Base Multilingual
 - WAV, MP3, M4A, AAC, and FLAC files up to 500 MiB or two hours
@@ -22,7 +36,9 @@ The model download is the only network operation in the core workflow. Audio and
 
 ## Run the app
 
-These instructions run the current companion implementation while plugin integration is developed.
+These instructions run the companion fallback while plugin release validation is completed.
+
+For plugin development and local installation, see [Plugin development](docs/PLUGIN_DEVELOPMENT.md).
 
 Requirements: macOS 14 or newer, Apple silicon, and Xcode 16 or newer.
 
@@ -64,6 +80,8 @@ python3 scripts/check_qa.py
 ## Project structure
 
 - `Sources/WhisperBridge/` — SwiftUI app, workflow state, audio decoder, model store, and Whisper engine
+- `Sources/WhisperBridgeCLI/` — headless JSON transcription helper used by the plugin
+- `plugin/` — LM Studio TypeScript prompt preprocessor, tests, and packaged native runtime
 - `Tests/WhisperBridgeTests/` — automated unit, decoder, and real-engine smoke tests
 - `Vendor/whisper.framework/` — pinned universal macOS framework from `whisper.cpp` v1.9.1
 - `docs/` — product decisions, reference research, use cases, and roadmap

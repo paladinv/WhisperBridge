@@ -54,3 +54,21 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.paladinv.WhisperBridgeTests
         GENERATE_INFOPLIST_FILE: YES
         LD_RUNPATH_SEARCH_PATHS: "$(inherited) $(PROJECT_DIR)/Vendor"
+  WhisperBridgeCLI:
+    type: tool
+    platform: macOS
+    sources:
+      - path: Sources/WhisperBridgeCLI
+      - path: Sources/WhisperBridge/Domain.swift
+      - path: Sources/WhisperBridge/AudioDecoder.swift
+      - path: Sources/WhisperBridge/WhisperEngine.swift
+    dependencies:
+      - framework: Vendor/whisper.framework
+        embed: false
+    settings:
+      base:
+        PRODUCT_NAME: WhisperBridgeCLI
+        ARCHS: arm64
+        ONLY_ACTIVE_ARCH: YES
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks"
+    scheme: {}

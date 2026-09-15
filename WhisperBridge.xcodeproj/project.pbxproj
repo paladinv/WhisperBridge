@@ -11,14 +11,19 @@
 		20E4DA76850DB5F9C103832E /* whisper.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 20DDE662E8E7C38CDFA55B47 /* whisper.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3911EA70EF121FC91D6832A6 /* WhisperSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6DE474FA3CD6FE25B8BA2CB /* WhisperSmokeTests.swift */; };
 		3FE072C6CD8B398ADD9F27B3 /* whisper.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20DDE662E8E7C38CDFA55B47 /* whisper.framework */; };
+		41D62DEF8F505FD61216310D /* WhisperBridgeCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 247166F4CD078D569E511C81 /* WhisperBridgeCLI.swift */; };
 		447BA2AA77B41DED1DB3FF2B /* AudioDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F8165445401E2570D44DCF /* AudioDecoder.swift */; };
+		573BC14F383680EF330891A0 /* whisper.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20DDE662E8E7C38CDFA55B47 /* whisper.framework */; };
 		5E1D618DA4D7C2379BC3D58C /* AudioDecoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4436335B9873F01E504C2746 /* AudioDecoderTests.swift */; };
 		723533A26EDC455A0BDBBFB8 /* Domain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44982526FD9795D4C17F7B5C /* Domain.swift */; };
+		7236504A4A874A6FE7E54AA3 /* Domain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44982526FD9795D4C17F7B5C /* Domain.swift */; };
 		7345C85AB0C5BD236071E551 /* WhisperBridgeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C139895BEC51121767521F4 /* WhisperBridgeApp.swift */; };
 		741C6BBFFBE66459C09D185F /* whisper.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20DDE662E8E7C38CDFA55B47 /* whisper.framework */; };
 		85B5AEA0D847E6C929179BD7 /* PerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 227631EE8DF32A77EC17EF11 /* PerformanceTests.swift */; };
 		8FD861428813153FC183662B /* Domain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44982526FD9795D4C17F7B5C /* Domain.swift */; };
+		958C63A822DFF11856FFA6C1 /* WhisperEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7698ABCB86310F48CAD85BCD /* WhisperEngine.swift */; };
 		B5386C40B47C0F692B3F4669 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D57BBBE4AE4ACFE8B239C39F /* ContentView.swift */; };
+		B706DF518A66E5FEFDA95FCA /* AudioDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F8165445401E2570D44DCF /* AudioDecoder.swift */; };
 		BC45050D3A8D3DD3E8E2F47B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BEAC6A3C96D677E8D0FB9AB9 /* Assets.xcassets */; };
 		BC73B726448F7FEAE613C653 /* DomainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 712496D061502967BE37F98E /* DomainTests.swift */; };
 		C413A93B4A59C48F9A1634D5 /* ModelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CDBAFA51F8D6391E6C45FB9 /* ModelStore.swift */; };
@@ -46,12 +51,14 @@
 		05E99B0F334E7FA266D38FDF /* WhisperBridge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WhisperBridge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		20DDE662E8E7C38CDFA55B47 /* whisper.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = whisper.framework; path = Vendor/whisper.framework; sourceTree = "<group>"; };
 		227631EE8DF32A77EC17EF11 /* PerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceTests.swift; sourceTree = "<group>"; };
+		247166F4CD078D569E511C81 /* WhisperBridgeCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperBridgeCLI.swift; sourceTree = "<group>"; };
 		4436335B9873F01E504C2746 /* AudioDecoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDecoderTests.swift; sourceTree = "<group>"; };
 		44982526FD9795D4C17F7B5C /* Domain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain.swift; sourceTree = "<group>"; };
 		4CDBAFA51F8D6391E6C45FB9 /* ModelStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelStore.swift; sourceTree = "<group>"; };
 		56582067E00860E6A3B133B9 /* WhisperBridgeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WhisperBridgeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		69727A825C1B6904CD611343 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		6C139895BEC51121767521F4 /* WhisperBridgeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperBridgeApp.swift; sourceTree = "<group>"; };
+		6DDB72376A0ED2C96EE41AB8 /* WhisperBridgeCLI */ = {isa = PBXFileReference; includeInIndex = 0; path = WhisperBridgeCLI; sourceTree = BUILT_PRODUCTS_DIR; };
 		712496D061502967BE37F98E /* DomainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainTests.swift; sourceTree = "<group>"; };
 		7698ABCB86310F48CAD85BCD /* WhisperEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperEngine.swift; sourceTree = "<group>"; };
 		95F8165445401E2570D44DCF /* AudioDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDecoder.swift; sourceTree = "<group>"; };
@@ -62,6 +69,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		5238E8E41BDC023956CB7A4E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				573BC14F383680EF330891A0 /* whisper.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D86A68D77927E6B75BC3C1E2 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -92,10 +107,19 @@
 			path = WhisperBridgeTests;
 			sourceTree = "<group>";
 		};
+		0B1B1F1A10A2EEA1B0A43BE3 /* WhisperBridgeCLI */ = {
+			isa = PBXGroup;
+			children = (
+				247166F4CD078D569E511C81 /* WhisperBridgeCLI.swift */,
+			);
+			path = WhisperBridgeCLI;
+			sourceTree = "<group>";
+		};
 		1F7DC39EFAB6D1ED2AC3C696 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				05E99B0F334E7FA266D38FDF /* WhisperBridge.app */,
+				6DDB72376A0ED2C96EE41AB8 /* WhisperBridgeCLI */,
 				56582067E00860E6A3B133B9 /* WhisperBridgeTests.xctest */,
 			);
 			name = Products;
@@ -105,6 +129,7 @@
 			isa = PBXGroup;
 			children = (
 				787FF23BA57398A1FEC21E7A /* WhisperBridge */,
+				0B1B1F1A10A2EEA1B0A43BE3 /* WhisperBridgeCLI */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -200,6 +225,24 @@
 			productReference = 56582067E00860E6A3B133B9 /* WhisperBridgeTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		CBF0319F1E502DC2B85AE8C2 /* WhisperBridgeCLI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 57DE7FDFE4FCE9739D73571A /* Build configuration list for PBXNativeTarget "WhisperBridgeCLI" */;
+			buildPhases = (
+				C9324504739B5A29B0800067 /* Sources */,
+				5238E8E41BDC023956CB7A4E /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WhisperBridgeCLI;
+			packageProductDependencies = (
+			);
+			productName = WhisperBridgeCLI;
+			productReference = 6DDB72376A0ED2C96EE41AB8 /* WhisperBridgeCLI */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -226,6 +269,7 @@
 			projectRoot = "";
 			targets = (
 				300B9B6FE5156AF30452F1A5 /* WhisperBridge */,
+				CBF0319F1E502DC2B85AE8C2 /* WhisperBridgeCLI */,
 				BEF70553ACDAD1A385E0442E /* WhisperBridgeTests */,
 			);
 		};
@@ -243,6 +287,17 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		C9324504739B5A29B0800067 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B706DF518A66E5FEFDA95FCA /* AudioDecoder.swift in Sources */,
+				7236504A4A874A6FE7E54AA3 /* Domain.swift in Sources */,
+				41D62DEF8F505FD61216310D /* WhisperBridgeCLI.swift in Sources */,
+				958C63A822DFF11856FFA6C1 /* WhisperEngine.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DF5E30676274B0BD772D9BB5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -275,6 +330,23 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		354AEFA64FD1B1DB2AEE3720 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"Vendor\"",
+				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.paladinv.WhisperBridgeCLI;
+				PRODUCT_NAME = WhisperBridgeCLI;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
 		3C1A3739BD4E564B7B149931 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -357,6 +429,23 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.paladinv.WhisperBridge;
 				PRODUCT_NAME = WhisperBridge;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		9010243EAD07F34D120413AF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"Vendor\"",
+				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.paladinv.WhisperBridgeCLI;
+				PRODUCT_NAME = WhisperBridgeCLI;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -489,6 +578,15 @@
 			buildConfigurations = (
 				CE477C33700D1B1C22ABC977 /* Debug */,
 				8BAB5E2A2E6F5F8882B92A82 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		57DE7FDFE4FCE9739D73571A /* Build configuration list for PBXNativeTarget "WhisperBridgeCLI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				354AEFA64FD1B1DB2AEE3720 /* Debug */,
+				9010243EAD07F34D120413AF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
