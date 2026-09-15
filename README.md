@@ -20,7 +20,7 @@ The repository now contains an LM Studio prompt-preprocessor plugin, a packaged 
 - Preservation of typed instructions and unrelated attachments
 - Transcript insertion into the sent message and LM Studio history
 
-The plugin SDK is currently in private beta. Local installation is implemented but remains a release gate because the LM Studio daemon on this development host was denied access to the repository by macOS Documents privacy.
+The plugin SDK is currently in private beta. The official local installer has installed and registered WhisperBridge on LM Studio 0.4.19+2, the deployed native helper passes the real-speech smoke fixture, and a headless integration test passes audio through LM Studio's supported file-handle service. Release validation still requires the attachment workflow in the actual composer and a no-terminal Hub installation.
 
 ### Companion fallback
 

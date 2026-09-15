@@ -27,6 +27,14 @@ Requirements: LM Studio 0.4.19 or newer with plugin beta access, Xcode 16 or new
    WHISPERBRIDGE_DATA_DIR="$PWD/../.build-artifacts/plugin-data" lms dev
    ```
 
+5. With LM Studio's service running and the licensed smoke fixture present, exercise its real file-handle backend without UI automation:
+
+   ```sh
+   npm run test:integration:lmstudio
+   ```
+
+   This uploads the fixture through `client.files.prepareFile()`, resolves the managed path, performs local transcription, checks prompt replacement and attachment consumption, and disconnects so LM Studio removes its temporary upload. It does not replace composer, history, or plugin-ordering QA.
+
 Use `lms dev --install` for a persistent local installation. The development data override keeps the model and partial downloads under `.build-artifacts/`. End-user installations use `~/Library/Application Support/LM Studio/WhisperBridge`.
 
 The first attached audio prompt downloads and verifies Whisper Base Multilingual. Text-only prompts return immediately without reading configuration, touching the filesystem, starting the helper, or checking the model.

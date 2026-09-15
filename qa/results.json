@@ -426,12 +426,12 @@
   {
     "id": "QA-054",
     "status": "BLOCKED",
-    "actual": "LM Studio identified paladinv/whisperbridge, but its daemon received EPERM opening plugin/manifest.json because macOS denied this host process access to the repository in Documents. No in-app attachment run was claimed.",
+    "actual": "The official local installer installed paladinv/whisperbridge from an LM Studio-readable staging directory. The installed process connected and registered its prompt preprocessor. A headless SDK integration uploaded the real WAV through LM Studio's supported file service, resolved its genuine FileHandle path, produced the exact expected transcript, replaced the message, consumed the attachment, and reached done status. The deployed native helper also passed from the installed directory. The actual composer hook and no-terminal installation step have not been exercised, so the full case is not claimed as passing.",
     "evidence": [
       "qa/evidence/plugin-implementation-20260914.md"
     ],
     "tester": "Codex",
-    "environment": "Apple M4 Max; macOS 26.4.1; LM Studio 0.4.19+2; plugin source at d6b3a5b plus working implementation changes"
+    "environment": "Apple M4 Max; macOS 26.4.1; LM Studio 0.4.19+2; plugin commit d9519f564b74b8d53685f909b239c0d0369cd6b4"
   },
   {
     "id": "QA-055",

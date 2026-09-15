@@ -53,23 +53,27 @@ The 2026-09-14 plugin change added a TypeScript prompt preprocessor, model manag
 | Verification group | Selected selectors | Duration or measurement | Result |
 | --- | ---: | ---: | --- |
 | TypeScript static build | compilation | less than 1 s | passed |
-| Plugin unit and contract tests | 16 | 0.148 s | 16 passed |
+| Plugin unit and contract tests | 16 | 0.179 s | 16 passed |
 | Packaged helper real-speech smoke | 1 | 8.00 s cold; 0.61 s warm | passed with expected transcript |
+| Installed helper real-speech smoke | 1 | 14.3 s command wall time | passed with expected transcript and bounded progress |
+| LM Studio file-handle integration | 1 | 1.27 s warm command time | passed upload, managed path, transcript replacement, attachment consumption, and final status |
 | Existing Swift domain/decoder/Whisper/performance regression | 11 | 0.437 s direct XCTest execution | 11 passed |
 | Package content inspection | one package | 5.7 MB unpacked | passed; no duplicate framework and an explicit framework load path |
 
-The plugin test selectors cover the text-only bypass, idempotence, attachment mutation safety, context-overflow safety, multiple-audio rejection, prompt formatting, filename sanitization, model data-directory isolation, versioned helper communication, and helper cancellation. The 10,000-call text-only microbenchmark took 6.93 ms on this host. This establishes negligible local preprocessor overhead in the mocked no-attachment path; an installed LM Studio prompt-latency comparison remains part of blocked native QA.
+The plugin test selectors cover the text-only bypass, idempotence, attachment mutation safety, context-overflow safety, multiple-audio rejection, prompt formatting, filename sanitization, model data-directory isolation, versioned helper communication, and helper cancellation. The latest 10,000-call text-only microbenchmark took 6.98 ms on this host. This establishes negligible local preprocessor overhead in the mocked no-attachment path; an installed LM Studio prompt-latency comparison remains part of blocked native QA.
+
+No Xcode rebuild was needed for the installation and headless-integration follow-up because no Swift, project, configuration, or toolchain input changed; the previously verified helper binary was reused. The new TypeScript integration runner initially failed static compilation because CommonJS disallows top-level `await`. After wrapping it in an async entry function, the focused `npm run build` retry passed in 0.319 seconds. The 16 unit selectors passed in 0.179 seconds, and the new LM Studio file-handle selector passed on its first execution in 1.27 seconds. The compile retry is build history rather than selector coverage; no additional selector retry was counted.
 
 The first `xcodebuild test-without-building` attempt was sandbox-blocked from Apple's test service. The escalated retry reached the test service but it reported that it could not create the on-disk, valid XCTest bundle. This infrastructure retry is retained in the Xcode logs and result bundles. Direct `xcrun xctest` execution of that same built bundle then passed all 11 expected selectors. No source rebuild occurred between the escalated Xcode attempt and direct bundle execution.
 
 Exact automated accounting for the plugin milestone:
 
-- Expected unique selectors: 28
-- Passed: 28
+- Expected unique selectors: 30
+- Passed: 30
 - Failed: 0
 - Missing: 0
 - Unexpected: 0
 - Unrun: 0
 - Retried selectors: 11 through the direct XCTest runner after Xcode test-runner infrastructure failure; counted once in coverage
 
-QA-054 remains BLOCKED by macOS Documents-folder permission when the LM Studio daemon opens the development plugin manifest. Other native product cases remain NOT_RUN. These product states do not change the automated accounting above. Failed/interrupted result bundles are retained because the installed native milestone has not passed. The complete `.build-artifacts/` directory is approximately 753 MiB; the plugin Derived Data cache is approximately 163 MiB and the retained application test Derived Data is approximately 123 MiB, both below 10 GiB.
+The official installer succeeded from an LM Studio-readable staging directory. The installed process connected and registered its prompt preprocessor, its deployed helper passed the real-speech fixture using the verified model cache, and the headless SDK test passed the supported file-handle contract without System Events access. QA-054 remains BLOCKED because the actual composer attachment flow and no-terminal installation step have not been executed. Other native product cases remain NOT_RUN. These product states do not change the automated accounting above. Failed/interrupted result bundles are retained because the installed native milestone has not passed. The complete `.build-artifacts/` directory is 778,544 KiB (about 760 MiB). Its reusable test Derived Data is 125,924 KiB, and the two retained run-specific Derived Data directories are 125,972 KiB and 125,976 KiB (about 123 MiB each), all below 10 GiB.
